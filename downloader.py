@@ -13,7 +13,7 @@ class Downloader:
         self.base_url = "http://ftp.uk.debian.org/debian/dists/stable/main/"
         self.base_pattern = "Contents-"
 
-    def fetch_urls(self):
+    def fetch_urls(self) -> list:
         _, url_soup = Downloader.request_soup(self.base_url)
         return [
             link.get("href")
@@ -21,14 +21,14 @@ class Downloader:
             if self.base_pattern in link.get("href")
         ]
 
-    def fetch_arch_url(self):
+    def fetch_arch_url(self) -> str:
         if self.architecture:
             architecture_path = [
                 link for link in self.fetch_urls() if self.architecture in link
             ]
             return parse.urljoin(self.base_url, architecture_path[0])
 
-    def save_gzip(self, chunk_size: int = 1024):
+    def save_gzip(self, chunk_size: int = 1024) -> None:
         r, _ = Downloader.request_soup(self.fetch_arch_url())
         with open(self.gzip_filename, "wb") as f:
             with tqdm(
@@ -43,7 +43,7 @@ class Downloader:
                     f.write(chunk)
                     progress_bar.update(len(chunk))
 
-    def save_txt(self):
+    def save_txt(self) -> None:
         with open(self.gzip_filename, "rb") as fr_gzip, open(
             self.txt_filename, "wb"
         ) as fr_txt:

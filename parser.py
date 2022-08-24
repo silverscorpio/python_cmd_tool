@@ -8,12 +8,12 @@ class Parser:
         self.package_file_dict = None
         self.package_file_dict_sorted = None
 
-    def read_txt(self):
+    def read_txt(self) -> bytes:
         with open(self.txt_filename, "rb") as f:
             self.file_data = f.read()
         return self.file_data
 
-    def parse_txt(self):
+    def parse_txt(self) -> dict:
         data_str = Parser.convert_to_str(self.read_txt())
         data_list = data_str.strip().split("\n")
         self.package_file_dict = defaultdict(list)
