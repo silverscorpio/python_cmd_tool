@@ -1,5 +1,6 @@
-from downloader import Downloader
 from parser import Parser
+
+from downloader import Downloader
 
 
 def main():
