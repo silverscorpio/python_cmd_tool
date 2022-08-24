@@ -1,11 +1,13 @@
 """Parser Class for Parsing the Downloaded Data"""
 
+import os
 from collections import defaultdict
 
 
 class Parser:
     def __init__(self, file_name: str):
-        self.txt_filename = file_name + ".txt"
+        self.data_dir = "repo_data"
+        self.txt_filename = os.path.join(self.data_dir, (file_name + ".txt"))
         self.file_data = None
         self.package_file_dict = None
         self.package_file_dict_sorted = None

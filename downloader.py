@@ -1,16 +1,19 @@
 """Downloader Class for Requesting and Saving the data as gzip and text"""
 
+import gzip
+import os
+from urllib import parse
+
 import requests
 from bs4 import BeautifulSoup
-import gzip
-from urllib import parse
 from tqdm import tqdm
 
 
 class Downloader:
     def __init__(self, architecture: str = "", file_name: str = "data"):
-        self.gzip_filename = file_name + ".gz"
-        self.txt_filename = file_name + ".txt"
+        self.data_dir = "repo_data"
+        self.gzip_filename = os.path.join(self.data_dir, (file_name + ".gz"))
+        self.txt_filename = os.path.join(self.data_dir, (file_name + ".txt"))
         self.architecture = architecture
         self.base_url = "http://ftp.uk.debian.org/debian/dists/stable/main/"
         self.base_pattern = "Contents-"

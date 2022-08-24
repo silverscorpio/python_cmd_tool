@@ -16,3 +16,8 @@ repos:
         args:
           - "--max-line-length=88"
           - "--ignore=F401,E501"
+  - repo: https://github.com/pycqa/isort
+    rev: 5.10.1
+    hooks:
+      - id: isort
+        name: isort (python)
