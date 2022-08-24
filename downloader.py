@@ -1,3 +1,5 @@
+"""Downloader Class for Requesting and Saving the data as gzip and text"""
+
 import requests
 from bs4 import BeautifulSoup
 import gzip
@@ -14,6 +16,7 @@ class Downloader:
         self.base_pattern = "Contents-"
 
     def fetch_urls(self) -> list:
+        """Fetches the Content (all URLs) from the Base URL"""
         _, url_soup = Downloader.request_soup(self.base_url)
         return [
             link.get("href")
@@ -22,6 +25,7 @@ class Downloader:
         ]
 
     def fetch_arch_url(self) -> str:
+        """Fetches URL corresponding to the given architecture"""
         if self.architecture:
             architecture_path = [
                 link for link in self.fetch_urls() if self.architecture in link
@@ -29,6 +33,7 @@ class Downloader:
             return parse.urljoin(self.base_url, architecture_path[0])
 
     def save_gzip(self, chunk_size: int = 1024) -> None:
+        """Saves the data as gzip"""
         r, _ = Downloader.request_soup(self.fetch_arch_url())
         with open(self.gzip_filename, "wb") as f:
             with tqdm(
@@ -44,6 +49,7 @@ class Downloader:
                     progress_bar.update(len(chunk))
 
     def save_txt(self) -> None:
+        """Saves the data as txt"""
         with open(self.gzip_filename, "rb") as fr_gzip, open(
             self.txt_filename, "wb"
         ) as fr_txt:
@@ -51,12 +57,14 @@ class Downloader:
             fr_txt.write(data)
 
     def __str__(self):
+        """Gives URL for given architecture or all URLs"""
         if self.architecture:
             return f" For {self.architecture}, download URL - {self.fetch_arch_url()}"
         return f"All File URLs - {self.fetch_urls()}"
 
     @staticmethod
     def request_soup(url: str):
+        """Prepares the Soup object for the URL after HTML Parsing"""
         # TODO implement exceptions
         r = requests.get(url)
         return r, BeautifulSoup(r.text, "html.parser")
