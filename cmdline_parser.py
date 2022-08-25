@@ -5,7 +5,7 @@ import argparse
 
 def validate_arch(arch: str) -> str:
     """
-    Helper function: Validate the 'arch' argument from cmdline assuming that no architecture
+    Validate the 'arch' argument from cmdline assuming that no architecture
     is purely numeric and return the lowercase value if correct
 
     Args:

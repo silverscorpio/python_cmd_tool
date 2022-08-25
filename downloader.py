@@ -134,21 +134,3 @@ class Downloader:
             sys.exit(e)
         else:
             return r, BeautifulSoup(r.text, "html.parser")
-
-    # @staticmethod
-    # def _validate_arch(arch: str) -> str:
-    #     """
-    #     Helper function: Validate the 'arch' argument from cmdline assuming that no architecture
-    #     is purely numeric and return the lowercase value if correct
-    #
-    #     Args:
-    #         arch: positional argument from cmd line
-    #
-    #     Returns:
-    #         str: the validated and converted to lowercase 'arch' argument
-    #
-    #     """
-    #     # TODO handle more gracefully
-    #     if arch.isnumeric():
-    #         raise TypeError("Invalid value for architecture")
-    #     return arch.lower()
