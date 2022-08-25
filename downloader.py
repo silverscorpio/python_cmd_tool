@@ -19,10 +19,14 @@ class Downloader:
         verbose: bool = True,
         file_name: str = "data",
     ):
-        self.data_dir = "repo_data"
-        self.gzip_filename = os.path.join(self.data_dir, (file_name + ".gz"))
-        self.txt_filename = os.path.join(self.data_dir, (file_name + ".txt"))
-        self.architecture = Downloader._validate_arch(architecture)
+        self.data_dir = "./repo_data"
+        self.architecture = architecture
+        self.gzip_filename = os.path.join(
+            self.data_dir, (file_name + f"_{self.architecture}" + ".gz")
+        )
+        self.txt_filename = os.path.join(
+            self.data_dir, (file_name + f"_{self.architecture}" + ".txt")
+        )
         self.base_url = base_url
         self.base_pattern = "Contents-"
         self.verbosity = verbose
@@ -51,12 +55,14 @@ class Downloader:
             str: download url specific to the architecture
 
         """
-
-        architecture_path = [
-            link for link in self.fetch_urls() if self.architecture in link
-        ]
-        # TODO handle the case if arch not found - Indexerror
-        return parse.urljoin(self.base_url, architecture_path[0])
+        try:
+            architecture_path = [
+                link for link in self.fetch_urls() if self.architecture in link
+            ][0]
+        except IndexError:
+            sys.exit("No file found for the given architecture")
+        else:
+            return parse.urljoin(self.base_url, architecture_path)
 
     def save_gzip(self, chunk_size: int = 1024) -> None:
         """
@@ -129,20 +135,20 @@ class Downloader:
         else:
             return r, BeautifulSoup(r.text, "html.parser")
 
-    @staticmethod
-    def _validate_arch(arch: str) -> str:
-        """
-        Helper function: Validate the 'arch' argument from cmdline assuming that no architecture
-        is purely numeric and return the lowercase value if correct
-
-        Args:
-            arch: positional argument from cmd line
-
-        Returns:
-            str: the validated and converted to lowercase 'arch' argument
-
-        """
-        # TODO handle more gracefully
-        if arch.isnumeric():
-            raise TypeError("Invalid value for architecture")
-        return arch.lower()
+    # @staticmethod
+    # def _validate_arch(arch: str) -> str:
+    #     """
+    #     Helper function: Validate the 'arch' argument from cmdline assuming that no architecture
+    #     is purely numeric and return the lowercase value if correct
+    #
+    #     Args:
+    #         arch: positional argument from cmd line
+    #
+    #     Returns:
+    #         str: the validated and converted to lowercase 'arch' argument
+    #
+    #     """
+    #     # TODO handle more gracefully
+    #     if arch.isnumeric():
+    #         raise TypeError("Invalid value for architecture")
+    #     return arch.lower()

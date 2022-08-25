@@ -5,9 +5,12 @@ from collections import defaultdict
 
 
 class Parser:
-    def __init__(self, file_name: str):
-        self.data_dir = "repo_data"
-        self.txt_filename = os.path.join(self.data_dir, (file_name + ".txt"))
+    def __init__(self, architecture: str, file_name: str):
+        self.data_dir = "./repo_data"
+        self.architecture = architecture
+        self.txt_filename = os.path.join(
+            self.data_dir, (file_name + f"_{self.architecture}" + ".txt")
+        )
         self.file_data = None
         self.package_file_dict = None
         self.package_file_dict_sorted = None

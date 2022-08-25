@@ -27,11 +27,10 @@ def main(url: str) -> None:
     downloader.save_txt()
 
     # Parse data and Output Package Statistics
-    parser = Parser("data")
+    parser = Parser(architecture=args.arch, file_name="data")
     parser.package_stats()
 
 
 if __name__ == "__main__":
-    # TODO add argparse with options for multiple architectures, help and error handling
     base_url = "http://ftp.uk.debian.org/debian/dists/stable/main/"
     main(base_url)

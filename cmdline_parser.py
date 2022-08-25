@@ -3,6 +3,24 @@
 import argparse
 
 
+def validate_arch(arch: str) -> str:
+    """
+    Helper function: Validate the 'arch' argument from cmdline assuming that no architecture
+    is purely numeric and return the lowercase value if correct
+
+    Args:
+        arch: positional argument from cmd line
+
+    Returns:
+        str: the validated and converted to lowercase 'arch' argument
+
+    """
+    # TODO handle more gracefully
+    if arch.isnumeric():
+        raise TypeError("Invalid value for architecture")
+    return arch.lower()
+
+
 def cmdline_parser():
     """
     Handle the Command Line Arguments
@@ -21,6 +39,7 @@ def cmdline_parser():
     )
     cmd_parser.add_argument("-v", default=True, help="show progress bar for download")
     args = cmd_parser.parse_args()
+    args.arch = validate_arch(args.arch)
     return args
 
 
