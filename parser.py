@@ -43,7 +43,13 @@ class Parser:
             self.package_file_dict[package].append(file)
         return self.package_file_dict
 
-    def package_stats(self, top_n: int = 10, output: bool = True) -> list:
+    def package_stats(
+        self,
+        top_n: int = 10,
+        output: bool = True,
+        write_to_file: bool = False,
+        filename: str = "results",
+    ) -> list:
         """
         Main task - Output the top-n packages and their files in descending order
 
@@ -51,6 +57,8 @@ class Parser:
             top_n: no of top packages required (based on the number of files contained in them),
             default=10 and sorting in descending order
             output: prints the list of top_n to stdout/console
+            write_to_file: to indicate if results are to be written to a txt file
+            filename: if yes above, the filename otherwise default name of "results" is used
 
         Returns:
             list: the list of reverse sorted top-n packages
@@ -64,9 +72,24 @@ class Parser:
             self.package_file_dict, desc=True
         )
         if output:
-            print("{:^40} {:^30}".format("PACKAGE NAME", "NUMBER OF FILES"))
-            for ind, val in enumerate(self.package_file_dict_sorted[:top_n]):
-                print("{}. {:-<50} {}".format((ind + 1), val[0], len(val[1])))
+            file_path = os.path.join(
+                self.data_dir, (filename + f"_{self.architecture}" + ".txt")
+            )
+            if os.path.exists:
+                os.remove(file_path)
+            with open(file_path, "a") as f:
+                header_string = "FOR ARCHITECTURE {}:\n\n{:^40} {:^30}\n".format(
+                    self.architecture, "PACKAGE NAME", "NUMBER OF FILES"
+                )
+                print(header_string)
+                f.write(header_string)
+                for ind, val in enumerate(self.package_file_dict_sorted[:top_n]):
+                    package_files_row = "{}. {:-<50} {}".format(
+                        (ind + 1), val[0], len(val[1])
+                    )
+                    print(package_files_row)
+                    if write_to_file:
+                        f.write(package_files_row + "\n")
         return self.package_file_dict_sorted
 
     def __str__(self):

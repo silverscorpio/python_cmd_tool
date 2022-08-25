@@ -41,7 +41,3 @@ def cmdline_parser():
     args = cmd_parser.parse_args()
     args.arch = validate_arch(args.arch)
     return args
-
-
-if __name__ == "__main__":
-    cmdline_parser()

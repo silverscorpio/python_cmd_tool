@@ -28,7 +28,7 @@ def main(url: str) -> None:
 
     # Parse data and Output Package Statistics
     parser = Parser(architecture=args.arch, file_name="data")
-    parser.package_stats()
+    parser.package_stats(write_to_file=True)
 
 
 if __name__ == "__main__":
