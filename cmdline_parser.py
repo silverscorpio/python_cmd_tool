@@ -7,13 +7,10 @@ def validate_arch(arch: str) -> str:
     """
     Validate the 'arch' argument from cmdline assuming that no architecture
     is purely numeric and return the lowercase value if correct
-
     Args:
         arch: positional argument from cmd line
-
     Returns:
         str: the validated and converted to lowercase 'arch' argument
-
     """
     # TODO handle more gracefully
     if arch.isnumeric():
@@ -24,10 +21,8 @@ def validate_arch(arch: str) -> str:
 def cmdline_parser():
     """
     Handle the Command Line Arguments
-
     Returns:
         args_object: the parsed arguments namespace
-
     """
     cmd_parser = argparse.ArgumentParser(
         description="Gets Debian Packages",

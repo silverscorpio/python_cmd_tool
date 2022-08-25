@@ -34,12 +34,9 @@ class Downloader:
     def fetch_urls(self) -> list:
         """
         Fetch Content for all URLs from the Base URL
-
         Returns:
             list: all content-indices download urls
-
         """
-
         _, url_soup = Downloader._request_soup(self.base_url)
         return [
             link.get("href")
@@ -50,10 +47,8 @@ class Downloader:
     def fetch_arch_url(self) -> str:
         """
         Fetch URL for the given architecture
-
         Returns:
             str: download url specific to the architecture
-
         """
         try:
             architecture_path = [
@@ -67,10 +62,8 @@ class Downloader:
     def save_gzip(self, chunk_size: int = 1024) -> None:
         """
         Save data to gzip file
-
         Args:
             chunk_size: determines the packet size for streaming from url
-
         Returns:
             None
         """
@@ -96,7 +89,6 @@ class Downloader:
     def save_txt(self) -> None:
         """
         Save data as text
-
         Returns:
             None
         """
@@ -109,7 +101,6 @@ class Downloader:
     def __str__(self):
         """
         Get architecture url
-
         Returns:
             str: architecture specific url
         """
@@ -119,14 +110,11 @@ class Downloader:
     def _request_soup(url: str) -> Tuple[requests.Response, bs4.BeautifulSoup]:
         """
         Helper function: Prepare the Soup object for the URL after HTML Parsing
-
         Args:
             url: the link for making the request
-
         Returns:
             r: the response object from the request
             soup_object: the parsed content from the response
-
         """
         try:
             r = requests.get(url)

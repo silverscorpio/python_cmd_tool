@@ -9,13 +9,10 @@ from downloader import Downloader
 def main(url: str) -> None:
     """
     Request, Download, Save, Parse and Output the top-n Debian Packages
-
     Args:
         url: the base url for making request for downloading the contents
-
     Returns:
         None
-
     """
 
     # Get the architecture from command line
