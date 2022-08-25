@@ -1,4 +1,4 @@
-"""Parser Class for Parsing the Downloaded Data"""
+"""Parser Class for Parsing through the Downloaded Data"""
 
 import os
 from collections import defaultdict
@@ -13,14 +13,26 @@ class Parser:
         self.package_file_dict_sorted = None
 
     def read_txt(self) -> bytes:
-        """Gets the data from text file"""
+        """
+        Get data from text file
+
+        Returns:
+            bytes_object: downloaded data in bytes format
+
+        """
         with open(self.txt_filename, "rb") as f:
             self.file_data = f.read()
         return self.file_data
 
     def parse_txt(self) -> dict:
-        """Parses the Text to get packages and corresponding files"""
-        data_str = Parser.convert_to_str(self.read_txt())
+        """
+        Parse data (text) to get packages and corresponding files
+
+        Returns:
+            dict_object: dictionary of packages and their corresponding files
+
+        """
+        data_str = Parser._convert_to_str(self.read_txt())
         data_list = data_str.strip().split("\n")
         self.package_file_dict = defaultdict(list)
         for ind, val in enumerate(data_list):
@@ -29,12 +41,23 @@ class Parser:
         return self.package_file_dict
 
     def package_stats(self, top_n: int = 10, output: bool = True) -> list:
-        """Main task - Outputs the top-n (def 10) packages and their files in descending order (def)"""
+        """
+        Main task - Output the top-n packages and their files in descending order
+
+        Args:
+            top_n: no of top packages required (based on the number of files contained in them),
+            default=10 and sorting in descending order
+            output: prints the list of top_n to stdout/console
+
+        Returns:
+            list: the list of reverse sorted top-n packages
+
+        """
         if self.package_file_dict is None:
-            self.package_file_dict_sorted = Parser.sort_dict_len_value(
+            self.package_file_dict_sorted = Parser._sort_dict_len_value(
                 self.parse_txt(), desc=True
             )
-        self.package_file_dict_sorted = Parser.sort_dict_len_value(
+        self.package_file_dict_sorted = Parser._sort_dict_len_value(
             self.package_file_dict, desc=True
         )
         if output:
@@ -44,18 +67,43 @@ class Parser:
         return self.package_file_dict_sorted
 
     def __str__(self):
-        """Gives info about the Packages and Files in the data"""
+        """
+        Give info about the Packages and Files in the data
+
+        Returns:
+            str: outputs information about the total packages and total files to stdout/console
+
+        """
         return f"""Content Indices Info:
         Total Packages: {len(self.package_file_dict)}
         Total Files: {sum([len(i) for i in self.package_file_dict.values()])}
         """
 
     @staticmethod
-    def convert_to_str(text: bytes) -> str:
-        """Converts Bytes to String"""
+    def _convert_to_str(text: bytes) -> str:
+        """
+        Helper function: Convert Bytes to String
+
+        Args:
+            text: byte-string to be converted to string
+
+        Returns:
+            str: the converted string
+
+        """
         return text.decode("utf-8")
 
     @staticmethod
-    def sort_dict_len_value(dictionary: dict, desc: bool = False) -> list:
-        """Sorts the dictionary in descending order (def) based on length of values (list)"""
+    def _sort_dict_len_value(dictionary: dict, desc: bool = False) -> list:
+        """
+        Sort the dictionary in descending order based on length of values
+
+        Args:
+            dictionary: dictionary with values as 'list' and sorted in ascending order (default) based on length
+            desc: if sorting needs to be in descending order
+
+        Returns:
+            list: list containing the dictionary elements as tuples sorted as stated above
+
+        """
         return sorted(dictionary.items(), key=lambda x: len(x[1]), reverse=desc)

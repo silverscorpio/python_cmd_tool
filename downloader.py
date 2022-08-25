@@ -1,26 +1,42 @@
 """Downloader Class for Requesting and Saving the data as gzip and text"""
-
 import gzip
 import os
+import sys
+from typing import Tuple
 from urllib import parse
 
+import bs4
 import requests
 from bs4 import BeautifulSoup
 from tqdm import tqdm
 
 
 class Downloader:
-    def __init__(self, architecture: str = "", file_name: str = "data"):
+    def __init__(
+        self,
+        architecture: str,
+        base_url: str,
+        verbose: bool = True,
+        file_name: str = "data",
+    ):
         self.data_dir = "repo_data"
         self.gzip_filename = os.path.join(self.data_dir, (file_name + ".gz"))
         self.txt_filename = os.path.join(self.data_dir, (file_name + ".txt"))
-        self.architecture = architecture
-        self.base_url = "http://ftp.uk.debian.org/debian/dists/stable/main/"
+        self.architecture = Downloader._validate_arch(architecture)
+        self.base_url = base_url
         self.base_pattern = "Contents-"
+        self.verbosity = verbose
 
     def fetch_urls(self) -> list:
-        """Fetches the Content (all URLs) from the Base URL"""
-        _, url_soup = Downloader.request_soup(self.base_url)
+        """
+        Fetch Content for all URLs from the Base URL
+
+        Returns:
+            list: all content-indices download urls
+
+        """
+
+        _, url_soup = Downloader._request_soup(self.base_url)
         return [
             link.get("href")
             for link in url_soup.find_all("a")
@@ -28,31 +44,56 @@ class Downloader:
         ]
 
     def fetch_arch_url(self) -> str:
-        """Fetches URL corresponding to the given architecture"""
-        if self.architecture:
-            architecture_path = [
-                link for link in self.fetch_urls() if self.architecture in link
-            ]
-            return parse.urljoin(self.base_url, architecture_path[0])
+        """
+        Fetch URL for the given architecture
+
+        Returns:
+            str: download url specific to the architecture
+
+        """
+
+        architecture_path = [
+            link for link in self.fetch_urls() if self.architecture in link
+        ]
+        # TODO handle the case if arch not found - Indexerror
+        return parse.urljoin(self.base_url, architecture_path[0])
 
     def save_gzip(self, chunk_size: int = 1024) -> None:
-        """Saves the data as gzip"""
-        r, _ = Downloader.request_soup(self.fetch_arch_url())
+        """
+        Save data to gzip file
+
+        Args:
+            chunk_size: determines the packet size for streaming from url
+
+        Returns:
+            None
+        """
+        r, _ = Downloader._request_soup(self.fetch_arch_url())
         with open(self.gzip_filename, "wb") as f:
-            with tqdm(
-                unit="B",
-                unit_scale=True,
-                unit_divisor=1024,
-                miniters=1,
-                desc="Downloading gzip",
-                total=int(r.headers.get("content-length", 0)),
-            ) as progress_bar:
-                for chunk in r.iter_content(chunk_size=chunk_size):
-                    f.write(chunk)
-                    progress_bar.update(len(chunk))
+            if self.verbosity:
+                with tqdm(
+                    unit="B",
+                    unit_scale=True,
+                    unit_divisor=1024,
+                    miniters=1,
+                    desc="Downloading gzip",
+                    total=int(r.headers.get("content-length", 0)),
+                    bar_format="{l_bar}{bar:20}{r_bar}{bar:-10b}",
+                    colour="green",
+                ) as progress_bar:
+                    for chunk in r.iter_content(chunk_size=chunk_size):
+                        f.write(chunk)
+                        progress_bar.update(len(chunk))
+            for chunk in r.iter_content(chunk_size=chunk_size):
+                f.write(chunk)
 
     def save_txt(self) -> None:
-        """Saves the data as txt"""
+        """
+        Save data as text
+
+        Returns:
+            None
+        """
         with open(self.gzip_filename, "rb") as fr_gzip, open(
             self.txt_filename, "wb"
         ) as fr_txt:
@@ -60,14 +101,48 @@ class Downloader:
             fr_txt.write(data)
 
     def __str__(self):
-        """Gives URL for given architecture or all URLs"""
-        if self.architecture:
-            return f" For {self.architecture}, download URL - {self.fetch_arch_url()}"
-        return f"All File URLs - {self.fetch_urls()}"
+        """
+        Get architecture url
+
+        Returns:
+            str: architecture specific url
+        """
+        return f" For {self.architecture}, download URL - {self.fetch_arch_url()}"
 
     @staticmethod
-    def request_soup(url: str):
-        """Prepares the Soup object for the URL after HTML Parsing"""
-        # TODO implement exceptions
-        r = requests.get(url)
-        return r, BeautifulSoup(r.text, "html.parser")
+    def _request_soup(url: str) -> Tuple[requests.Response, bs4.BeautifulSoup]:
+        """
+        Helper function: Prepare the Soup object for the URL after HTML Parsing
+
+        Args:
+            url: the link for making the request
+
+        Returns:
+            r: the response object from the request
+            soup_object: the parsed content from the response
+
+        """
+        try:
+            r = requests.get(url)
+        except requests.exceptions.ConnectionError as e:
+            sys.exit(e)
+        else:
+            return r, BeautifulSoup(r.text, "html.parser")
+
+    @staticmethod
+    def _validate_arch(arch: str) -> str:
+        """
+        Helper function: Validate the 'arch' argument from cmdline assuming that no architecture
+        is purely numeric and return the lowercase value if correct
+
+        Args:
+            arch: positional argument from cmd line
+
+        Returns:
+            str: the validated and converted to lowercase 'arch' argument
+
+        """
+        # TODO handle more gracefully
+        if arch.isnumeric():
+            raise TypeError("Invalid value for architecture")
+        return arch.lower()
