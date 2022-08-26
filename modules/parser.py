@@ -1,14 +1,18 @@
 """Parser Class for Parsing through the Downloaded Data"""
+
 import logging
 import os
 import sys
 from collections import defaultdict
 
+logger = logging.getLogger(__name__)
+
 
 class Parser:
-    def __init__(self, architecture: str, file_name: str):
-        self.data_dir = os.path.join(os.getcwd(), "repo_data")
+    def __init__(self, architecture: str, verbose: bool, file_name: str = "data"):
+        self.data_dir = os.path.join(os.getcwd(), "files")
         self.architecture = architecture
+        self.verbosity = verbose
         self.txt_filename = os.path.join(
             self.data_dir, (file_name + f"_{self.architecture}" + ".txt")
         )
@@ -62,6 +66,8 @@ class Parser:
         Returns:
             list: the list of reverse sorted top-n packages
         """
+        if self.verbosity:
+            logging.info("Getting Package Stats...")
         if self.package_file_dict is None:
             self.package_file_dict_sorted = Parser._sort_dict_len_value(
                 self.parse_txt(), desc=True
@@ -77,18 +83,15 @@ class Parser:
                 os.remove(file_path)
             try:
                 with open(file_path, "a") as f:
-                    header_string = "FOR ARCHITECTURE {}:\n{:^40} {:^30}".format(
+                    header_string = "FOR ARCHITECTURE {}:\n{:^40} {:^40}".format(
                         self.architecture, "PACKAGE NAME", "NUMBER OF FILES"
                     )
-                    # TODO logging
                     print(header_string)
-                    logging.info(header_string)
-                    f.write(header_string)
+                    f.write(header_string + "\n")
                     for ind, val in enumerate(self.package_file_dict_sorted[:top_n]):
-                        package_files_row = "{}. {:-<50} {}".format(
+                        package_files_row = "{:>5}. {:-<50} {}".format(
                             (ind + 1), val[0], len(val[1])
                         )
-                        # TODO logging
                         print(package_files_row)
                         if write_to_file:
                             f.write(package_files_row + "\n")

@@ -1,4 +1,5 @@
 """Downloader Class for Requesting and Saving the data as gzip and text"""
+
 import gzip
 import logging
 import os
@@ -11,17 +12,20 @@ import requests
 from bs4 import BeautifulSoup
 from tqdm import tqdm
 
+logger = logging.getLogger(__name__)
+
 
 class Downloader:
     def __init__(
         self,
         architecture: str,
         base_url: str,
-        verbose: bool = True,
+        verbose: bool,
         file_name: str = "data",
     ):
-        self.data_dir = os.path.join(os.getcwd(), "repo_data")
+        self.data_dir = os.path.join(os.getcwd(), "files")
         self.architecture = architecture
+        self.verbosity = verbose
         self.gzip_filename = os.path.join(
             self.data_dir, (file_name + f"_{self.architecture}" + ".gz")
         )
@@ -30,7 +34,6 @@ class Downloader:
         )
         self.base_url = base_url
         self.base_pattern = "Contents-"
-        self.verbosity = verbose
 
     def fetch_urls(self) -> list:
         """
@@ -68,25 +71,26 @@ class Downloader:
         Returns:
             None
         """
+        if self.verbosity:
+            logger.info("Downloading the File from URL as gzip...")
         r, _ = Downloader._request_soup(self.fetch_arch_url())
         try:
             with open(self.gzip_filename, "wb") as f:
-                if self.verbosity:
-                    with tqdm(
-                        unit="B",
-                        unit_scale=True,
-                        unit_divisor=1024,
-                        miniters=1,
-                        desc="Downloading gzip",
-                        total=int(r.headers.get("content-length", 0)),
-                        bar_format="{l_bar}{bar:20}{r_bar}{bar:-10b}",
-                        colour="green",
-                    ) as progress_bar:
-                        for chunk in r.iter_content(chunk_size=chunk_size):
-                            f.write(chunk)
-                            progress_bar.update(len(chunk))
-                for chunk in r.iter_content(chunk_size=chunk_size):
-                    f.write(chunk)
+                with tqdm(
+                    unit="B",
+                    unit_scale=True,
+                    unit_divisor=1024,
+                    miniters=1,
+                    desc="Progress",
+                    total=int(r.headers.get("content-length", 0)),
+                    bar_format="{l_bar}{bar:20}{r_bar}{bar:-10b}",
+                    colour="green",
+                ) as progress_bar:
+                    for chunk in r.iter_content(chunk_size=chunk_size):
+                        f.write(chunk)
+                        progress_bar.update(len(chunk))
+            for chunk in r.iter_content(chunk_size=chunk_size):
+                f.write(chunk)
         except FileNotFoundError as e:
             sys.exit(e)
 
@@ -96,6 +100,8 @@ class Downloader:
         Returns:
             None
         """
+        if self.verbosity:
+            logger.info("Saving as txt file for further use...")
         try:
             with open(self.gzip_filename, "rb") as fr_gzip, open(
                 self.txt_filename, "wb"

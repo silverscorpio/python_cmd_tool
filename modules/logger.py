@@ -1,30 +1,40 @@
-""" Sets the Logger """
+""" Declaring and Configuring the Logger """
 
 import logging
 import os
+from logging import Logger
 
 
-def def_logger(log_dir: str):
-    # log file definition
+def def_logger(log_dir: str) -> Logger:
+    """
+    Define the Logger
+    Args:
+        log_dir: the directory for the log files
+    Returns:
+        root_logger: configured root logger
+    """
+
+    # define log file
     logfile_name = "log_info.log"
     logfile_path = os.path.join(log_dir, "logs", logfile_name)
 
+    # create root logger and set log level
     logger = logging.getLogger()
     logger.setLevel(logging.INFO)
 
-    # handlers
-    # file handler
+    # define handlers - file and stream handler
     fh = logging.FileHandler(logfile_path)
-    fh.setLevel(logging.DEBUG)
+    fh.setLevel(logging.INFO)
 
-    # console handler
     ch = logging.StreamHandler()
-    ch.setLevel(logging.ERROR)
+    ch.setLevel(logging.INFO)
 
-    # formatter
+    # define formatter
     formatter = logging.Formatter(
-        "%(asctime)s - %(message)s - %(module)s - %(funcName)s - %(lineno)d"
+        "%(asctime)s  %(levelname)s  %(message)s [%(filename)s]"
     )
+
+    # set formatter
     fh.setFormatter(formatter)
     ch.setFormatter(formatter)
 

@@ -1,4 +1,5 @@
 """ Main Script for Getting Debian Packages based on Architecture from Command Line with Python"""
+
 import os
 
 from modules.cmdline_parser import cmdline_parser
@@ -20,16 +21,16 @@ def main(url: str) -> None:
     args = cmdline_parser()
 
     # Download the data
-    downloader = Downloader(architecture=args.arch, base_url=url, verbose=args.v)
-    downloader.save_gzip()
-    downloader.save_txt()
+    # downloader = Downloader(architecture=args.arch, base_url=url, verbose=args.v)
+    # downloader.save_gzip()
+    # downloader.save_txt()
 
     # Parse data and Output Package Statistics
-    parser = Parser(architecture=args.arch, file_name="data")
+    parser = Parser(architecture=args.arch, verbose=args.v)
     parser.package_stats(write_to_file=True)
 
 
 if __name__ == "__main__":
     base_url = "http://ftp.uk.debian.org/debian/dists/stable/main/"
     logger = def_logger(log_dir=os.getcwd())
-    # main(base_url)
+    main(base_url)
