@@ -49,7 +49,7 @@ class Parser:
         top_n: int = 10,
         output: bool = True,
         write_to_file: bool = False,
-        filename: str = "results",
+        filename: str = "package_stats",
     ) -> list:
         """
         Main task - Output the top-n packages and their files in descending order
@@ -130,8 +130,3 @@ class Parser:
             list: list containing the dictionary elements as tuples sorted as stated above
         """
         return sorted(dictionary.items(), key=lambda x: len(x[1]), reverse=desc)
-
-
-if __name__ == "__main__":
-    logger = logging.getLogger()
-    print(logger)

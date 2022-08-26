@@ -129,8 +129,3 @@ class Downloader:
             sys.exit(e)
         else:
             return r, BeautifulSoup(r.text, "html.parser")
-
-
-if __name__ == "__main__":
-    print(logging.getLogger("__main__." + __name__))
-    print(os.getcwd())
