@@ -1,9 +1,8 @@
 """ Main Script for Getting Debian Packages based on Architecture from Command Line with Python"""
 
-from parser import Parser
-
-from cmdline_parser import cmdline_parser
-from downloader import Downloader
+from modules.cmdline_parser import cmdline_parser
+from modules.downloader import Downloader
+from modules.parser import Parser
 
 
 def main(url: str) -> None:
@@ -30,4 +29,13 @@ def main(url: str) -> None:
 
 if __name__ == "__main__":
     base_url = "http://ftp.uk.debian.org/debian/dists/stable/main/"
+
+    # # logging
+    # logging.basicConfig(filename="./logs/log_info.log", level=logging.INFO, filemode='w',
+    #                     format='%(asctime)s-%(message)s-%(lineno)d-%(funcName)s-%(module)s')
+    # logger = logging.getLogger()
+    # print(logger)
+    # logging.info("Started")
+    # main
     main(base_url)
+    # logging.info("Finished")

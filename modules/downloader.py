@@ -1,5 +1,6 @@
 """Downloader Class for Requesting and Saving the data as gzip and text"""
 import gzip
+import logging
 import os
 import sys
 from typing import Tuple
@@ -19,7 +20,7 @@ class Downloader:
         verbose: bool = True,
         file_name: str = "data",
     ):
-        self.data_dir = "./repo_data"
+        self.data_dir = os.path.join(os.getcwd(), "repo_data")
         self.architecture = architecture
         self.gzip_filename = os.path.join(
             self.data_dir, (file_name + f"_{self.architecture}" + ".gz")
@@ -68,23 +69,26 @@ class Downloader:
             None
         """
         r, _ = Downloader._request_soup(self.fetch_arch_url())
-        with open(self.gzip_filename, "wb") as f:
-            if self.verbosity:
-                with tqdm(
-                    unit="B",
-                    unit_scale=True,
-                    unit_divisor=1024,
-                    miniters=1,
-                    desc="Downloading gzip",
-                    total=int(r.headers.get("content-length", 0)),
-                    bar_format="{l_bar}{bar:20}{r_bar}{bar:-10b}",
-                    colour="green",
-                ) as progress_bar:
-                    for chunk in r.iter_content(chunk_size=chunk_size):
-                        f.write(chunk)
-                        progress_bar.update(len(chunk))
-            for chunk in r.iter_content(chunk_size=chunk_size):
-                f.write(chunk)
+        try:
+            with open(self.gzip_filename, "wb") as f:
+                if self.verbosity:
+                    with tqdm(
+                        unit="B",
+                        unit_scale=True,
+                        unit_divisor=1024,
+                        miniters=1,
+                        desc="Downloading gzip",
+                        total=int(r.headers.get("content-length", 0)),
+                        bar_format="{l_bar}{bar:20}{r_bar}{bar:-10b}",
+                        colour="green",
+                    ) as progress_bar:
+                        for chunk in r.iter_content(chunk_size=chunk_size):
+                            f.write(chunk)
+                            progress_bar.update(len(chunk))
+                for chunk in r.iter_content(chunk_size=chunk_size):
+                    f.write(chunk)
+        except FileNotFoundError as e:
+            sys.exit(e)
 
     def save_txt(self) -> None:
         """
@@ -92,11 +96,14 @@ class Downloader:
         Returns:
             None
         """
-        with open(self.gzip_filename, "rb") as fr_gzip, open(
-            self.txt_filename, "wb"
-        ) as fr_txt:
-            data = gzip.decompress(fr_gzip.read())
-            fr_txt.write(data)
+        try:
+            with open(self.gzip_filename, "rb") as fr_gzip, open(
+                self.txt_filename, "wb"
+            ) as fr_txt:
+                data = gzip.decompress(fr_gzip.read())
+                fr_txt.write(data)
+        except FileNotFoundError as e:
+            sys.exit(e)
 
     def __str__(self):
         """
@@ -122,3 +129,8 @@ class Downloader:
             sys.exit(e)
         else:
             return r, BeautifulSoup(r.text, "html.parser")
+
+
+if __name__ == "__main__":
+    print(logging.getLogger("__main__." + __name__))
+    print(os.getcwd())

@@ -1,12 +1,13 @@
 """Parser Class for Parsing through the Downloaded Data"""
-
+import logging
 import os
+import sys
 from collections import defaultdict
 
 
 class Parser:
     def __init__(self, architecture: str, file_name: str):
-        self.data_dir = "./repo_data"
+        self.data_dir = os.path.join(os.getcwd(), "repo_data")
         self.architecture = architecture
         self.txt_filename = os.path.join(
             self.data_dir, (file_name + f"_{self.architecture}" + ".txt")
@@ -21,9 +22,13 @@ class Parser:
         Returns:
             bytes_object: downloaded data in bytes format
         """
-        with open(self.txt_filename, "rb") as f:
-            self.file_data = f.read()
-        return self.file_data
+        try:
+            with open(self.txt_filename, "rb") as f:
+                self.file_data = f.read()
+        except FileNotFoundError as e:
+            sys.exit(e)
+        else:
+            return self.file_data
 
     def parse_txt(self) -> dict:
         """
@@ -68,24 +73,29 @@ class Parser:
             file_path = os.path.join(
                 self.data_dir, (filename + f"_{self.architecture}" + ".txt")
             )
-            if os.path.exists:
+            if os.path.exists(file_path):
                 os.remove(file_path)
-            with open(file_path, "a") as f:
-                header_string = "FOR ARCHITECTURE {}:\n\n{:^40} {:^30}\n".format(
-                    self.architecture, "PACKAGE NAME", "NUMBER OF FILES"
-                )
-                # TODO logging
-                print(header_string)
-                f.write(header_string)
-                for ind, val in enumerate(self.package_file_dict_sorted[:top_n]):
-                    package_files_row = "{}. {:-<50} {}".format(
-                        (ind + 1), val[0], len(val[1])
+            try:
+                with open(file_path, "a") as f:
+                    header_string = "FOR ARCHITECTURE {}:\n{:^40} {:^30}".format(
+                        self.architecture, "PACKAGE NAME", "NUMBER OF FILES"
                     )
                     # TODO logging
-                    print(package_files_row)
-                    if write_to_file:
-                        f.write(package_files_row + "\n")
-        return self.package_file_dict_sorted
+                    print(header_string)
+                    logging.info(header_string)
+                    f.write(header_string)
+                    for ind, val in enumerate(self.package_file_dict_sorted[:top_n]):
+                        package_files_row = "{}. {:-<50} {}".format(
+                            (ind + 1), val[0], len(val[1])
+                        )
+                        # TODO logging
+                        print(package_files_row)
+                        if write_to_file:
+                            f.write(package_files_row + "\n")
+            except FileNotFoundError as e:
+                sys.exit(e)
+            else:
+                return self.package_file_dict_sorted
 
     def __str__(self):
         """
@@ -120,3 +130,8 @@ class Parser:
             list: list containing the dictionary elements as tuples sorted as stated above
         """
         return sorted(dictionary.items(), key=lambda x: len(x[1]), reverse=desc)
+
+
+if __name__ == "__main__":
+    logger = logging.getLogger()
+    print(logger)
