@@ -1,4 +1,4 @@
-""" Declaring and Configuring the Logger """
+""" Defining the Logger """
 
 import logging
 import os
@@ -7,7 +7,7 @@ from logging import Logger
 
 def def_logger(log_dir: str) -> Logger:
     """
-    Define the Logger
+    Define and Configure the Logger
     Args:
         log_dir: the directory for the log files
     Returns:
@@ -24,8 +24,7 @@ def def_logger(log_dir: str) -> Logger:
 
     # define handlers - file and stream handler
     fh = logging.FileHandler(logfile_path)
-    fh.setLevel(logging.INFO)
-
+    fh.setLevel(logging.WARNING)
     ch = logging.StreamHandler()
     ch.setLevel(logging.INFO)
 

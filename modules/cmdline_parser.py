@@ -21,20 +21,20 @@ def validate_arch(arch: str) -> str:
     return arch.lower()
 
 
-def cmdline_parser():
+def cmdline_parser() -> argparse.Namespace:
     """
     Handle Command Line Arguments
     Returns:
         args_object: parsed arguments namespace
     """
     cmd_parser = argparse.ArgumentParser(
-        description="Get Debian Packages for an Architecture"
+        description="Get Debian Packages for a Given Architecture"
     )
     cmd_parser.add_argument(
         "arch",
-        help="architecture for which debian packages are required",
+        help="Architecture for which Debian Packages are required",
     )
-    cmd_parser.add_argument("-v", action="store_true", help="show progress status")
+    cmd_parser.add_argument("-v", action="store_true", help="Show Progress Status")
     args = cmd_parser.parse_args()
     args.arch = validate_arch(args.arch)
 

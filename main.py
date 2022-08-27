@@ -1,4 +1,4 @@
-""" Main Script for Getting Debian Packages based on Architecture from Command Line with Python"""
+""" Main Script for Getting Debian Packages based on Architecture from Command Line """
 
 import os
 
@@ -10,7 +10,7 @@ from modules.parser import Parser
 
 def main(url: str) -> None:
     """
-    Request, Download, Save, Parse and Output the top-n Debian Packages
+    Request, Download, Save, Parse and Output the top-n Debian Packages with their Files
     Args:
         url: the base url for making request for downloading the contents
     Returns:
@@ -21,9 +21,9 @@ def main(url: str) -> None:
     args = cmdline_parser()
 
     # Download the data
-    # downloader = Downloader(architecture=args.arch, base_url=url, verbose=args.v)
-    # downloader.save_gzip()
-    # downloader.save_txt()
+    downloader = Downloader(architecture=args.arch, base_url=url, verbose=args.v)
+    downloader.save_gzip()
+    downloader.save_txt()
 
     # Parse data and Output Package Statistics
     parser = Parser(architecture=args.arch, verbose=args.v)

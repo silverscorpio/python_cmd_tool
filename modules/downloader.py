@@ -37,9 +37,9 @@ class Downloader:
 
     def fetch_urls(self) -> list:
         """
-        Fetch Content for all URLs from the Base URL
+        Fetch and parse all download links of gzip files from base URL
         Returns:
-            list: all content-indices download urls
+            list: all download URLs
         """
         _, url_soup = Downloader._request_soup(self.base_url)
         return [
@@ -48,9 +48,9 @@ class Downloader:
             if self.base_pattern in link.get("href")
         ]
 
-    def fetch_arch_url(self) -> str:
+    def extract_arch_url(self) -> str:
         """
-        Fetch URL for the given architecture
+        Extract URL for the given architecture from all URLs
         Returns:
             str: download url specific to the architecture
         """
@@ -65,15 +65,15 @@ class Downloader:
 
     def save_gzip(self, chunk_size: int = 1024) -> None:
         """
-        Save data to gzip file
+        Save data as a gzip file
         Args:
-            chunk_size: determines the packet size for streaming from url
+            chunk_size: determines the packet size for streaming from extracted URL
         Returns:
             None
         """
         if self.verbosity:
             logger.info("Downloading the File from URL as gzip...")
-        r, _ = Downloader._request_soup(self.fetch_arch_url())
+        r, _ = Downloader._request_soup(self.extract_arch_url())
         try:
             with open(self.gzip_filename, "wb") as f:
                 with tqdm(
@@ -96,7 +96,7 @@ class Downloader:
 
     def save_txt(self) -> None:
         """
-        Save data as text
+        Save data (within gzip) in a text file
         Returns:
             None
         """
@@ -113,20 +113,20 @@ class Downloader:
 
     def __str__(self):
         """
-        Get architecture url
+        Give info about architecture url
         Returns:
-            str: architecture specific url
+            str: architecture url
         """
-        return f" For {self.architecture}, download URL - {self.fetch_arch_url()}"
+        return f" For {self.architecture}, download URL - {self.extract_arch_url()}"
 
     @staticmethod
     def _request_soup(url: str) -> Tuple[requests.Response, bs4.BeautifulSoup]:
         """
-        Helper function: Prepare the Soup object for the URL after HTML Parsing
+        Helper function: Prepare Soup object for the URL after HTML Parsing
         Args:
             url: the link for making the request
         Returns:
-            r: the response object from the request
+            r: response object from the request
             soup_object: the parsed content from the response
         """
         try:

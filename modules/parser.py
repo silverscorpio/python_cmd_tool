@@ -1,4 +1,4 @@
-"""Parser Class for Parsing through the Downloaded Data"""
+"""Parser Class for Parsing through the Downloaded Data and Obtaining Package Statistics"""
 
 import logging
 import os
@@ -22,9 +22,9 @@ class Parser:
 
     def read_txt(self) -> bytes:
         """
-        Get data from text file
+        Read data from already generated text file
         Returns:
-            bytes_object: downloaded data in bytes format
+            bytes_object: downloaded data in bytes
         """
         try:
             with open(self.txt_filename, "rb") as f:
@@ -38,7 +38,7 @@ class Parser:
         """
         Parse data (text) to get packages and corresponding files
         Returns:
-            dict_object: dictionary of packages and their corresponding files
+            dict: dictionary of packages and their corresponding files
         """
         data_str = Parser._convert_to_str(self.read_txt())
         data_list = data_str.strip().split("\n")
@@ -56,15 +56,15 @@ class Parser:
         filename: str = "package_stats",
     ) -> list:
         """
-        Main task - Output the top-n packages and their files in descending order
+        Main Task - Output the top-n packages and their files in descending order (Package Stats)
         Args:
             top_n: no of top packages required (based on the number of files contained in them),
-            default=10 and sorting in descending order
-            output: prints the list of top_n to stdout/console
-            write_to_file: to indicate if results are to be written to a txt file
-            filename: if yes above, the filename otherwise default name of "results" is used
+            default=10 and sort in descending order
+            output: if the list of top_n is printed to stdout/console
+            write_to_file: if results are to be written to a txt file
+            filename: if yes above, the filename else default base name of "package_stats" is used
         Returns:
-            list: the list of reverse sorted top-n packages
+            list: reverse-sorted (desc) top-n packages and their files
         """
         if self.verbosity:
             logging.info("Getting Package Stats...")
@@ -102,9 +102,9 @@ class Parser:
 
     def __str__(self):
         """
-        Give info about the Packages and Files in the data
+        Give info about the downloaded data based on Package Stats
         Returns:
-            str: outputs information about the total packages and total files to stdout/console
+            str: output information about the total packages and total files to stdout/console
         """
         return f"""Content Indices Info:
         Total Packages: {len(self.package_file_dict)}
@@ -125,11 +125,11 @@ class Parser:
     @staticmethod
     def _sort_dict_len_value(dictionary: dict, desc: bool = False) -> list:
         """
-        Sort the dictionary in descending order based on length of values
+        Sort the dictionary in descending order based on length of values (list)
         Args:
-            dictionary: dictionary with values as 'list' and sorted in ascending order (default) based on length
-            desc: if sorting needs to be in descending order
+            dictionary: dictionary with values sorted in ascending order (default) based on length
+            desc: if sorting needs to be done in descending order
         Returns:
-            list: list containing the dictionary elements as tuples sorted as stated above
+            list: contains the sorted dictionary elements as tuples
         """
         return sorted(dictionary.items(), key=lambda x: len(x[1]), reverse=desc)
