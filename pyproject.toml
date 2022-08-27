@@ -1,8 +1,11 @@
 [tool.poetry]
 name = "canonical"
 version = "0.1.0"
-description = ""
-authors = ["silverscorpio <rajat.newtoneinstein@gmail.com>"]
+description = "Python Command Line Tool For Downloading Debian Packages"
+authors = ["Rajat silverscorpio <rajat.newtoneinstein@gmail.com>"]
+license = "MIT"
+readme = "README.md"
+keywords = ["python", "debian", "command line"]
 
 [tool.poetry.dependencies]
 python = "^3.10"

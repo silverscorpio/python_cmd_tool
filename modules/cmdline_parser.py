@@ -15,7 +15,6 @@ def validate_arch(arch: str) -> str:
     Returns:
         str: the validated and converted to lowercase 'arch' argument
     """
-    # TODO handle more gracefully
     if arch.isnumeric():
         raise TypeError("Invalid value for architecture")
     return arch.lower()
