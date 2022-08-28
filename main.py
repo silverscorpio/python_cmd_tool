@@ -1,7 +1,6 @@
 """ Main Script for Getting Debian Packages based on Architecture from Command Line """
 
 import os
-import sys
 
 from modules.cmdline_parser import args_parser
 from modules.downloader import Downloader

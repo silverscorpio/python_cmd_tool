@@ -30,7 +30,7 @@ class Parser:
             with open(self.txt_filename, "rb") as f:
                 self.file_data = f.read()
         except FileNotFoundError as e:
-            # TODO logging
+            logger.error("txt file not found for reading")
             sys.exit(e)
         else:
             return self.file_data

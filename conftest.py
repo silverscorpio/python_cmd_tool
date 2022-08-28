@@ -31,19 +31,19 @@ def downloader():
 
 class MockResponse:
     def __init__(self, response_status: int, response_text="alphabeta123"):
-        self.response_status = response_status
+        self.status_code = response_status
         self.text = response_text
 
     def get_response_status(self):
-        if self.response_status == 200:
-            return self.response_status
-        elif self.response_status // 100 == 4:
+        if self.status_code == 200:
+            return self.status_code
+        elif self.status_code // 100 == 4:
             return HTTPError
-        elif self.response_status // 100 == 5:
+        elif self.status_code // 100 == 5:
             return ConnectionError
         else:
             return RequestException
 
     def raise_for_status(self):
-        if self.response_status != 200:
+        if self.status_code != 200:
             return HTTPError

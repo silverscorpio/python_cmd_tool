@@ -109,7 +109,7 @@ class Downloader:
                 data = gzip.decompress(fr_gzip.read())
                 fr_txt.write(data)
         except FileNotFoundError as e:
-            # TODO logging
+            logger.error("gzip file not found for writing a txt file")
             sys.exit(e)
 
     def __str__(self):
@@ -130,7 +130,6 @@ class Downloader:
             r: response object from the request
             soup_object: the parsed content from the response
         """
-        # TODO status code handling with logging
         try:
             r = requests.get(url)
             r.raise_for_status()
@@ -141,4 +140,5 @@ class Downloader:
         except requests.exceptions.RequestException as e:
             sys.exit(f"Other issue while making request: {e}")
         else:
+            logger.info("Request to Base URL successful")
             return r, BeautifulSoup(r.text, "html.parser")

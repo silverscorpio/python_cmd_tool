@@ -40,8 +40,3 @@ def args_parser() -> argparse.Namespace:
     args = cmd_parser.parse_args()
     args.arch = validate_arch(args.arch)
     return args
-
-
-if __name__ == "__main__":
-    print(sys.argv)
-    print(args_parser())
