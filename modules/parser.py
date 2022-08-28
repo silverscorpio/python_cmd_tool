@@ -30,6 +30,7 @@ class Parser:
             with open(self.txt_filename, "rb") as f:
                 self.file_data = f.read()
         except FileNotFoundError as e:
+            # TODO logging
             sys.exit(e)
         else:
             return self.file_data
@@ -40,7 +41,7 @@ class Parser:
         Returns:
             dict: dictionary of packages and their corresponding files
         """
-        data_str = Parser._convert_to_str(self.read_txt())
+        data_str = Parser.convert_to_str(self.read_txt())
         data_list = data_str.strip().split("\n")
         self.package_file_dict = defaultdict(list)
         for ind, val in enumerate(data_list):
@@ -69,10 +70,10 @@ class Parser:
         if self.verbosity:
             logging.info("Getting Package Stats...")
         if self.package_file_dict is None:
-            self.package_file_dict_sorted = Parser._sort_dict_len_value(
+            self.package_file_dict_sorted = Parser.sort_dict_len_value(
                 self.parse_txt(), desc=True
             )
-        self.package_file_dict_sorted = Parser._sort_dict_len_value(
+        self.package_file_dict_sorted = Parser.sort_dict_len_value(
             self.package_file_dict, desc=True
         )
         if output:
@@ -112,7 +113,7 @@ class Parser:
         """
 
     @staticmethod
-    def _convert_to_str(text: bytes) -> str:
+    def convert_to_str(text: bytes) -> str:
         """
         Helper function: Convert Bytes to String
         Args:
@@ -123,7 +124,7 @@ class Parser:
         return text.decode("utf-8")
 
     @staticmethod
-    def _sort_dict_len_value(dictionary: dict, desc: bool = False) -> list:
+    def sort_dict_len_value(dictionary: dict, desc: bool = False) -> list:
         """
         Sort the dictionary in descending order based on length of values (list)
         Args:

@@ -41,7 +41,7 @@ class Downloader:
         Returns:
             list: all download URLs
         """
-        _, url_soup = Downloader._request_soup(self.base_url)
+        _, url_soup = Downloader.request_soup(self.base_url)
         return [
             link.get("href")
             for link in url_soup.find_all("a")
@@ -73,7 +73,7 @@ class Downloader:
         """
         if self.verbosity:
             logger.info("Downloading the File from URL as gzip...")
-        r, _ = Downloader._request_soup(self.extract_arch_url())
+        r, _ = Downloader.request_soup(self.extract_arch_url())
         try:
             with open(self.gzip_filename, "wb") as f:
                 with tqdm(
@@ -109,6 +109,7 @@ class Downloader:
                 data = gzip.decompress(fr_gzip.read())
                 fr_txt.write(data)
         except FileNotFoundError as e:
+            # TODO logging
             sys.exit(e)
 
     def __str__(self):
@@ -120,7 +121,7 @@ class Downloader:
         return f" For {self.architecture}, download URL - {self.extract_arch_url()}"
 
     @staticmethod
-    def _request_soup(url: str) -> Tuple[requests.Response, bs4.BeautifulSoup]:
+    def request_soup(url: str) -> Tuple[requests.Response, bs4.BeautifulSoup]:
         """
         Helper function: Prepare Soup object for the URL after HTML Parsing
         Args:
@@ -129,9 +130,15 @@ class Downloader:
             r: response object from the request
             soup_object: the parsed content from the response
         """
+        # TODO status code handling with logging
         try:
             r = requests.get(url)
+            r.raise_for_status()
+        except requests.exceptions.HTTPError as e:
+            sys.exit(f"HTTP Error: {e}")
         except requests.exceptions.ConnectionError as e:
-            sys.exit(e)
+            sys.exit(f"Cannot Connect: {e}")
+        except requests.exceptions.RequestException as e:
+            sys.exit(f"Other issue while making request: {e}")
         else:
             return r, BeautifulSoup(r.text, "html.parser")
