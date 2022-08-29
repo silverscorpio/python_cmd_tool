@@ -27,6 +27,7 @@ Download and Get Package Statistics for a given architecture
 - license - [MIT](./LICENSE.md)
 - *main.py* - entry point for the tool [main script](./main.py)
 - more info under [Project TOML](./pyproject.toml)
+- Approx. time invested: ~ a week
 
 #### Project Description | Approach
 
