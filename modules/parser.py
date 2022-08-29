@@ -68,7 +68,7 @@ class Parser:
             list: reverse-sorted (desc) top-n packages and their files
         """
         if self.verbosity:
-            logging.info("Getting Package Stats...")
+            logging.info(f"Getting Stats for top-{top_n} Packages...")
         if self.package_file_dict is None:
             self.package_file_dict_sorted = Parser.sort_dict_len_value(
                 self.parse_txt(), desc=True

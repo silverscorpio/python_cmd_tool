@@ -15,6 +15,6 @@ def test_validate_arch_numeric(arch_numeric):
 
 
 def test_cmdline_parser_arch(monkeypatch):
-    monkeypatch.setattr("sys.argv", ["main.py", "alpha123", "-v"])
-    assert args_parser().arch == "alpha123"
+    monkeypatch.setattr("sys.argv", ["main.py", "alpha123", "beta456", "-v"])
+    assert args_parser().arch == ["alpha123", "beta456"]
     assert args_parser().verbose

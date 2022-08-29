@@ -17,11 +17,7 @@ logger = logging.getLogger(__name__)
 
 class Downloader:
     def __init__(
-        self,
-        architecture: str,
-        base_url: str,
-        verbose: bool,
-        file_name: str = "data",
+        self, architecture: str, base_url: str, verbose: bool, file_name: str = "data"
     ):
         self.data_dir = os.path.join(os.getcwd(), "files")
         self.architecture = architecture
@@ -72,7 +68,7 @@ class Downloader:
             None
         """
         if self.verbosity:
-            logger.info("Downloading the File from URL as gzip...")
+            logger.info("Downloading the File from URL and saving as gzip...")
         r, _ = Downloader.request_soup(self.extract_arch_url())
         try:
             with open(self.gzip_filename, "wb") as f:
@@ -89,8 +85,6 @@ class Downloader:
                     for chunk in r.iter_content(chunk_size=chunk_size):
                         f.write(chunk)
                         progress_bar.update(len(chunk))
-            for chunk in r.iter_content(chunk_size=chunk_size):
-                f.write(chunk)
         except FileNotFoundError as e:
             sys.exit(e)
 
@@ -101,7 +95,7 @@ class Downloader:
             None
         """
         if self.verbosity:
-            logger.info("Saving as txt file for further use...")
+            logger.info("Saving as txt file for further parsing...")
         try:
             with open(self.gzip_filename, "rb") as fr_gzip, open(
                 self.txt_filename, "wb"
@@ -134,11 +128,13 @@ class Downloader:
             r = requests.get(url)
             r.raise_for_status()
         except requests.exceptions.HTTPError as e:
+            logger.error(f"Error: {url} {e}")
             sys.exit(f"HTTP Error: {e}")
         except requests.exceptions.ConnectionError as e:
+            logger.error(f"Error: {url} {e}")
             sys.exit(f"Cannot Connect: {e}")
         except requests.exceptions.RequestException as e:
+            logger.error(f"Error: {url} {e}")
             sys.exit(f"Other issue while making request: {e}")
         else:
-            logger.info("Request to Base URL successful")
             return r, BeautifulSoup(r.text, "html.parser")

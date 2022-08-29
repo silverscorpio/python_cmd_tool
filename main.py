@@ -19,16 +19,17 @@ def main() -> None:
     # Get the architecture from command line
     args = args_parser()
 
-    # Download the data
-    downloader = Downloader(
-        architecture=args.arch, base_url=base_url, verbose=args.verbose
-    )
-    downloader.save_gzip()
-    downloader.save_txt()
+    for arch in args.arch:
+        # Download the data
+        downloader = Downloader(
+            architecture=arch, base_url=base_url, verbose=args.verbose
+        )
+        downloader.save_gzip()
+        downloader.save_txt()
 
-    # Parse data and Output Package Statistics
-    parser = Parser(architecture=args.arch, verbose=args.verbose)
-    parser.package_stats(write_to_file=True)
+        # Parse data and Output Package Statistics
+        parser = Parser(architecture=arch, verbose=args.verbose)
+        parser.package_stats(write_to_file=True)
 
 
 if __name__ == "__main__":

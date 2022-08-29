@@ -2,7 +2,6 @@
 
 import argparse
 import logging
-import sys
 
 logger = logging.getLogger(__name__)
 
@@ -32,11 +31,16 @@ def args_parser() -> argparse.Namespace:
     )
     cmd_parser.add_argument(
         "arch",
-        help="Architecture for which Debian Packages are required",
+        type=str,
+        nargs="+",
+        help="Architecture(s) for which Debian Packages are required, give multiple values separated by space",
     )
     cmd_parser.add_argument(
-        "-v", "--verbose", action="store_true", help="Show Progress Status"
+        "-v",
+        "--verbose",
+        action="store_true",
+        help="Show Progress Status",
     )
     args = cmd_parser.parse_args()
-    args.arch = validate_arch(args.arch)
+    args.arch = [validate_arch(arch) for arch in args.arch]
     return args
