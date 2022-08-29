@@ -14,7 +14,7 @@ Download and Get Package Statistics for a given architecture
 
 #### General Directory Structure
 
-<img src="./static/dir_tree.png" width="200" alt="project directory structure"/>
+<img src="./static/dir_tree.png" width="350" alt="project directory structure"/>
 
 #### Basic Project Info
 
