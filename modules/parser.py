@@ -44,9 +44,12 @@ class Parser:
         data_str = Parser.convert_to_str(self.read_txt())
         data_list = data_str.strip().split("\n")
         self.package_file_dict = defaultdict(list)
+        # TODO abstract this functionality for testing
         for ind, val in enumerate(data_list):
             file, package = val.split()[0], val.split()[1]
             self.package_file_dict[package].append(file)
+            if file == "EMPTY_PACKAGE":  # for udeb arch (first row)
+                self.package_file_dict[package] = []
         return self.package_file_dict
 
     def package_stats(

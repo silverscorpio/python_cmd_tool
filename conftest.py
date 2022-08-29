@@ -23,6 +23,11 @@ def parser():
 
 
 @pytest.fixture
+def parser_byte_to_str():
+    return b"alphaBetaCharlie"
+
+
+@pytest.fixture
 def downloader():
     return Downloader(
         architecture="alpha123", base_url="https://testurl", verbose=False
