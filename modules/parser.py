@@ -37,19 +37,13 @@ class Parser:
 
     def parse_txt(self) -> dict:
         """
-        Parse data (text) to get packages and corresponding files
+        Parse raw data (text) to get packages and corresponding files in list form
         Returns:
-            dict: dictionary of packages and their corresponding files
+            dict: dictionary of packages and their corresponding files using helper function
         """
         data_str = Parser.convert_to_str(self.read_txt())
         data_list = data_str.strip().split("\n")
-        self.package_file_dict = defaultdict(list)
-        # TODO abstract this functionality for testing
-        for ind, val in enumerate(data_list):
-            file, package = val.split()[0], val.split()[1]
-            self.package_file_dict[package].append(file)
-            if file == "EMPTY_PACKAGE":  # for udeb arch (first row)
-                self.package_file_dict[package] = []
+        self.package_file_dict = self._process_data(data=data_list)
         return self.package_file_dict
 
     def package_stats(
@@ -110,9 +104,13 @@ class Parser:
         Returns:
             str: output information about the total packages and total files to stdout/console
         """
+        if self.package_file_dict is None:
+            self.package_file_dict = self.parse_txt()
         return f"""Content Indices Info:
         Total Packages: {len(self.package_file_dict)}
         Total Files: {sum([len(i) for i in self.package_file_dict.values()])}
+        Empty Packages: {sum([1 if not i else 0 for i in self.package_file_dict.values()])}
+        Ungrouped Files: {len(self.package_file_dict["ungrouped_files"])}
         """
 
     @staticmethod
@@ -129,7 +127,7 @@ class Parser:
     @staticmethod
     def sort_dict_len_value(dictionary: dict, desc: bool = False) -> list:
         """
-        Sort the dictionary in descending order based on length of values (list)
+        Sort dictionary in descending order based on length of values (list)
         Args:
             dictionary: dictionary with values sorted in ascending order (default) based on length
             desc: if sorting needs to be done in descending order
@@ -137,3 +135,27 @@ class Parser:
             list: contains the sorted dictionary elements as tuples
         """
         return sorted(dictionary.items(), key=lambda x: len(x[1]), reverse=desc)
+
+    def _process_data(self, data: list) -> dict:
+        """
+        Helper function: Process raw text content for the given architecture
+        Args:
+            data: packages and files data in list form, read from saved txt file
+        Returns:
+            dict: dictionary containing packages as keys and their files as values (list)
+        """
+        if self.verbosity:
+            logging.info("Processing raw data...")
+        self.package_file_dict = defaultdict(list)
+        for ind, val in enumerate(data):
+            try:
+                file, package = val.split()[0], val.split()[1]
+            except IndexError as e:  # incase file has no package
+                logging.error(f"{e}: No package for '{val.split()[0]}' file")
+                self.package_file_dict["ungrouped_files"].append(val.split()[0])
+            else:
+                self.package_file_dict[package].append(file)
+                if file == "EMPTY_PACKAGE":  # for udeb arch, empty package (first row)
+                    logger.warning(f"No file(s) for '{package}' package")
+                    self.package_file_dict[package] = []
+        return self.package_file_dict

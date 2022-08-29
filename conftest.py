@@ -1,4 +1,4 @@
-""" Pytest Config - Defining fixtures etc."""
+""" Pytest Config - Defining Fixtures and Mock """
 
 import pytest
 from requests.exceptions import ConnectionError, HTTPError, RequestException
@@ -25,6 +25,20 @@ def parser():
 @pytest.fixture
 def parser_byte_to_str():
     return b"alphaBetaCharlie"
+
+
+@pytest.fixture
+def parser_process_data():
+    return [
+        "f1 p1",
+        "f2 p2",
+        "f3 p3",
+        "EMPTY_PACKAGE p4",
+        "f4 p2",
+        "f5 p3",
+        "f6 p3",
+        "f7 ",
+    ]
 
 
 @pytest.fixture

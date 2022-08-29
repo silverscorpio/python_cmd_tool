@@ -55,6 +55,7 @@ class Downloader:
                 link for link in self.fetch_urls() if self.architecture in link
             ][0]
         except IndexError:
+            logger.error("No file found for the given architecture")
             sys.exit("No file found for the given architecture")
         else:
             return parse.urljoin(self.base_url, architecture_path)
@@ -85,7 +86,8 @@ class Downloader:
                     for chunk in r.iter_content(chunk_size=chunk_size):
                         f.write(chunk)
                         progress_bar.update(len(chunk))
-        except FileNotFoundError as e:
+        except IOError as e:
+            logger.error(f"Error while writing gzip file: {e}")
             sys.exit(e)
 
     def save_txt(self) -> None:
@@ -117,7 +119,7 @@ class Downloader:
     @staticmethod
     def request_soup(url: str) -> Tuple[requests.Response, bs4.BeautifulSoup]:
         """
-        Helper function: Prepare Soup object for the URL after HTML Parsing
+        Prepare Soup object for the URL after HTML Parsing
         Args:
             url: the link for making the request
         Returns:
