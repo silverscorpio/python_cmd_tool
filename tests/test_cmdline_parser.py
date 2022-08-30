@@ -10,7 +10,7 @@ def test_validate_arch_valid(arch_valid):
 
 
 def test_validate_arch_numeric(arch_numeric):
-    with pytest.raises(TypeError):
+    with pytest.raises(SystemExit):
         validate_arch(arch_numeric)
 
 
