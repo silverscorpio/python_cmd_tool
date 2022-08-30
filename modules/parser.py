@@ -1,4 +1,4 @@
-"""Parser Class for Parsing through the Downloaded Data and Obtaining Package Statistics"""
+"""Parser for Parsing and Processing the Downloaded Data and Obtaining Package Stats"""
 
 import logging
 import os
@@ -22,7 +22,7 @@ class Parser:
 
     def read_txt(self) -> bytes:
         """
-        Read data from already generated text file
+        Read data from saved text file
         Returns:
             bytes_object: downloaded data in bytes
         """
@@ -31,13 +31,13 @@ class Parser:
                 self.file_data = f.read()
         except FileNotFoundError as e:
             logger.error("txt file not found for reading")
-            sys.exit(e)
+            sys.exit(f"{e} - Logged")
         else:
             return self.file_data
 
     def parse_txt(self) -> dict:
         """
-        Parse raw data (text) to get packages and corresponding files in list form
+        Parse raw data to get packages and corresponding files in list form
         Returns:
             dict: dictionary of packages and their corresponding files using helper function
         """
@@ -64,8 +64,6 @@ class Parser:
         Returns:
             list: reverse-sorted (desc) top-n packages and their files
         """
-        if self.verbosity:
-            logging.info(f"Getting Stats for top-{top_n} Packages...")
         if self.package_file_dict is None:
             self.package_file_dict_sorted = Parser.sort_dict_len_value(
                 self.parse_txt(), desc=True
@@ -73,6 +71,8 @@ class Parser:
         self.package_file_dict_sorted = Parser.sort_dict_len_value(
             self.package_file_dict, desc=True
         )
+        if self.verbosity:
+            logging.info(f"Getting Stats for top-{top_n} Packages...")
         if output:
             file_path = os.path.join(
                 self.data_dir, (filename + f"_{self.architecture}" + ".txt")
@@ -156,6 +156,6 @@ class Parser:
             else:
                 self.package_file_dict[package].append(file)
                 if file == "EMPTY_PACKAGE":  # for udeb arch, empty package (first row)
-                    logger.warning(f"No file(s) for '{package}' package")
+                    logger.warning(f"No file for '{package}' package")
                     self.package_file_dict[package] = []
         return self.package_file_dict

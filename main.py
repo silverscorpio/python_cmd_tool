@@ -20,14 +20,14 @@ def main() -> None:
     args = args_parser()
 
     for arch in args.arch:
-        # Download the data
+        # Download and save the data
         downloader = Downloader(
             architecture=arch, base_url=base_url, verbose=args.verbose
         )
         downloader.save_gzip()
         downloader.save_txt()
 
-        # Parse data and Output Package Statistics
+        # Parse data and Output Package Stats
         parser = Parser(architecture=arch, verbose=args.verbose)
         parser.package_stats(write_to_file=True)
 

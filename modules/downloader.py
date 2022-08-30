@@ -1,4 +1,4 @@
-"""Downloader Class for Requesting and Saving the data as gzip and text"""
+"""Downloader for Downloading and Saving the data as gzip and text"""
 
 import gzip
 import logging
@@ -54,9 +54,9 @@ class Downloader:
             architecture_path = [
                 link for link in self.fetch_urls() if self.architecture in link
             ][0]
-        except IndexError:
-            logger.error("No file found for the given architecture")
-            sys.exit("No file found for the given architecture")
+        except IndexError as e:
+            logger.error(f"No file found for '{self.architecture}'")
+            sys.exit(f"{e} - Logged")
         else:
             return parse.urljoin(self.base_url, architecture_path)
 
@@ -64,12 +64,12 @@ class Downloader:
         """
         Save data as a gzip file
         Args:
-            chunk_size: determines the packet size for streaming from extracted URL
+            chunk_size: the packet size for streaming from extracted URL
         Returns:
             None
         """
         if self.verbosity:
-            logger.info("Downloading the File from URL and saving as gzip...")
+            logger.info("Downloading contents from URL and saving as gzip...")
         r, _ = Downloader.request_soup(self.extract_arch_url())
         try:
             with open(self.gzip_filename, "wb") as f:
@@ -88,16 +88,16 @@ class Downloader:
                         progress_bar.update(len(chunk))
         except IOError as e:
             logger.error(f"Error while writing gzip file: {e}")
-            sys.exit(e)
+            sys.exit(f"{e} - Logged")
 
     def save_txt(self) -> None:
         """
-        Save data (within gzip) in a text file
+        Save data from gzip in a text file
         Returns:
             None
         """
         if self.verbosity:
-            logger.info("Saving as txt file for further parsing...")
+            logger.info("Saving as txt file for further processing...")
         try:
             with open(self.gzip_filename, "rb") as fr_gzip, open(
                 self.txt_filename, "wb"
@@ -106,7 +106,7 @@ class Downloader:
                 fr_txt.write(data)
         except FileNotFoundError as e:
             logger.error("gzip file not found for writing a txt file")
-            sys.exit(e)
+            sys.exit(f"{e} - Logged")
 
     def __str__(self):
         """
@@ -131,12 +131,12 @@ class Downloader:
             r.raise_for_status()
         except requests.exceptions.HTTPError as e:
             logger.error(f"Error: {url} {e}")
-            sys.exit(f"HTTP Error: {e}")
+            sys.exit(f"{e} - Logged")
         except requests.exceptions.ConnectionError as e:
             logger.error(f"Error: {url} {e}")
-            sys.exit(f"Cannot Connect: {e}")
+            sys.exit(f"{e} - Logged")
         except requests.exceptions.RequestException as e:
             logger.error(f"Error: {url} {e}")
-            sys.exit(f"Other issue while making request: {e}")
+            sys.exit(f"{e} - Logged")
         else:
             return r, BeautifulSoup(r.text, "html.parser")

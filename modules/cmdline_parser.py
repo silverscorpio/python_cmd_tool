@@ -1,4 +1,4 @@
-"""Command Line Parsing Using Argparse"""
+"""Command Line Argument Parsing using Argparse"""
 
 import argparse
 import logging
