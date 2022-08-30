@@ -29,9 +29,9 @@ class Parser:
         try:
             with open(self.txt_filename, "rb") as f:
                 self.file_data = f.read()
-        except FileNotFoundError as e:
-            logger.error("txt file not found for reading")
-            sys.exit(f"{e} - Logged")
+        except FileNotFoundError:
+            logger.error("No txt file found to read from")
+            sys.exit()
         else:
             return self.file_data
 
@@ -81,7 +81,7 @@ class Parser:
                 os.remove(file_path)
             try:
                 with open(file_path, "a") as f:
-                    header_string = "FOR ARCHITECTURE {}:\n{:^40} {:^40}".format(
+                    header_string = "FOR ARCHITECTURE '{}':\n{:^40} {:^40}".format(
                         self.architecture, "PACKAGE NAME", "NUMBER OF FILES"
                     )
                     print(header_string)
@@ -93,8 +93,9 @@ class Parser:
                         print(package_files_row)
                         if write_to_file:
                             f.write(package_files_row + "\n")
-            except FileNotFoundError as e:
-                sys.exit(e)
+            except IOError as e:
+                logger.error(f"Error while writing results txt file: {e}")
+                sys.exit()
             else:
                 return self.package_file_dict_sorted
 

@@ -2,6 +2,7 @@
 
 import argparse
 import logging
+import sys
 
 logger = logging.getLogger(__name__)
 
@@ -16,7 +17,8 @@ def validate_arch(arch: str) -> str:
         str: the validated and converted to lowercase 'arch' argument
     """
     if arch.isnumeric():
-        raise TypeError("Invalid value for architecture")
+        logger.error("TypeError: Invalid value for architecture")
+        sys.exit()
     return arch.lower()
 
 

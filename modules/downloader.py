@@ -54,9 +54,11 @@ class Downloader:
             architecture_path = [
                 link for link in self.fetch_urls() if self.architecture in link
             ][0]
-        except IndexError as e:
-            logger.error(f"No file found for '{self.architecture}'")
-            sys.exit(f"{e} - Logged")
+        except IndexError:
+            logger.error(
+                f"No download file found for architecture '{self.architecture}' at {self.base_url}"
+            )
+            sys.exit()
         else:
             return parse.urljoin(self.base_url, architecture_path)
 
@@ -88,7 +90,7 @@ class Downloader:
                         progress_bar.update(len(chunk))
         except IOError as e:
             logger.error(f"Error while writing gzip file: {e}")
-            sys.exit(f"{e} - Logged")
+            sys.exit()
 
     def save_txt(self) -> None:
         """
@@ -104,9 +106,9 @@ class Downloader:
             ) as fr_txt:
                 data = gzip.decompress(fr_gzip.read())
                 fr_txt.write(data)
-        except FileNotFoundError as e:
+        except FileNotFoundError:
             logger.error("gzip file not found for writing a txt file")
-            sys.exit(f"{e} - Logged")
+            sys.exit()
 
     def __str__(self):
         """
@@ -130,13 +132,13 @@ class Downloader:
             r = requests.get(url)
             r.raise_for_status()
         except requests.exceptions.HTTPError as e:
-            logger.error(f"Error: {url} {e}")
-            sys.exit(f"{e} - Logged")
+            logger.error(f"HTTP Error: {url} {e}")
+            sys.exit()
         except requests.exceptions.ConnectionError as e:
-            logger.error(f"Error: {url} {e}")
-            sys.exit(f"{e} - Logged")
+            logger.error(f"Cannot Connect: {url} {e}")
+            sys.exit()
         except requests.exceptions.RequestException as e:
-            logger.error(f"Error: {url} {e}")
-            sys.exit(f"{e} - Logged")
+            logger.error(f"Problem encountered: {url} {e}")
+            sys.exit()
         else:
             return r, BeautifulSoup(r.text, "html.parser")
