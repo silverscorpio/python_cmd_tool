@@ -2,7 +2,7 @@ import pytest
 import requests
 from requests.exceptions import ConnectionError, HTTPError, RequestException
 
-from conftest import MockResponse
+from canonical.conftest import MockResponse
 
 
 @pytest.mark.parametrize(

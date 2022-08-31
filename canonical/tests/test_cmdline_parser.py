@@ -2,7 +2,7 @@
 
 import pytest
 
-from modules.cmdline_parser import args_parser, validate_arch
+from canonical.modules.cmdline_parser import args_parser, validate_arch
 
 
 def test_validate_arch_valid(arch_valid):

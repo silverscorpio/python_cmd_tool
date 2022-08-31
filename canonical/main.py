@@ -1,7 +1,6 @@
 """ Main Script for Getting Debian Packages based on Architecture from Command Line """
 
 import os
-import time
 
 from modules.cmdline_parser import args_parser
 from modules.downloader import Downloader
@@ -36,6 +35,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     logger = def_logger(log_dir=os.getcwd())
-    start = time.time()
     main()
-    print(time.time() - start)

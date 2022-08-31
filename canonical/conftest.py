@@ -3,8 +3,8 @@
 import pytest
 from requests.exceptions import ConnectionError, HTTPError, RequestException
 
-from modules.downloader import Downloader
-from modules.parser import Parser
+from canonical.modules.downloader import Downloader
+from canonical.modules.parser import Parser
 
 
 @pytest.fixture(params=["alpha123", "BETA456"])
