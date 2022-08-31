@@ -47,12 +47,15 @@ class Parser:
 
     def parse_txt(self) -> None:
         """
-        Parse raw data to get packages & corresponding files in list form
+        Parse and Process raw data to get packages & corresponding files and their count
         Returns:
-            dict: dictionary of packages & their corresponding files using helper function
+            None
         """
+        # parse the raw data - prepare it for further processing
         data_str = Parser.convert_to_str(self.read_txt())
         data_list = data_str.strip().split("\n")
+
+        # process the contents
         self._process_contents(data=data_list)
 
     def package_stats(
@@ -63,7 +66,7 @@ class Parser:
         filename: str = "package_stats",
     ) -> list:
         """
-        Main Task - Output the top-n packages & their files in descending order (Package Stats)
+        Main Task - Output the top-n packages & the no of files in descending order (Package Stats)
         Args:
             top_n: no of top packages required (based on the number of files contained in them),
             default=10 & sort in descending order
@@ -71,7 +74,7 @@ class Parser:
             write_to_file: if results are to be written to a txt file
             filename: if yes above, the filename else default base name of "package_stats" is used
         Returns:
-            list: reverse-sorted (desc) top-n packages & their files
+            list: reverse-sorted (desc) top-n packages & the no of files contained in them
         """
         if not self.package_file_dict_len:
             self.parse_txt()
@@ -115,7 +118,7 @@ class Parser:
         Returns:
             str: output information about the total packages & total files to stdout/console
         """
-        if self.package_file_dict is None:
+        if not self.package_file_dict_len:
             self.parse_txt()
         return f"""Content Indices Info:
         Total Packages: {len(self.package_file_dict_len)}
@@ -138,9 +141,9 @@ class Parser:
     @staticmethod
     def sort_dict_len(dictionary: dict, desc: bool = False) -> list:
         """
-        Sort dictionary in descending order based on length of values (list)
+        Sort dictionary in descending order based on values (int)
         Args:
-            dictionary: dictionary with values sorted in ascending order (default) based on length
+            dictionary: dictionary with values sorted in ascending order (default)
             desc: if sorting needs to be done in descending order
         Returns:
             list: contains the sorted dictionary elements as tuples
@@ -153,18 +156,24 @@ class Parser:
         Args:
             data: packages & files data in list form, read from saved txt file
         Returns:
-            dict: dictionary containing packages as keys & their files as values (list)
+            None
         """
         if self.verbosity:
             logging.info("Processing raw data...")
         for ind, val in enumerate(data):
             file_and_package = val.split()
+
+            # if the row is 'good' - both file and package present
             if len(file_and_package) == 2:
                 file_s, package = Parser._split_by_comma(
                     val.split()[0]
                 ), Parser._split_by_comma(val.split()[1])
+
+                # if the first element is the string "empty_package"
                 if file_s[0] == "EMPTY_PACKAGE":
-                    logger.warning(f"No file for '{package[0]}' package")
+                    logger.warning(
+                        f"'Empty Package' found for '{package[0]}' package @ {ind + 1} line in file"
+                    )
                     self.package_file_dict_len[package[0]] = 0
                     if self.get_contents:
                         self.package_file_dict[package[0]] = []
@@ -174,19 +183,31 @@ class Parser:
                         if self.get_contents:
                             self.package_file_dict[pack].extend(file_s)
 
+            # if either file or package is missing (more functionality req for finding if it's file or package
             elif len(file_and_package) == 1:
                 logging.warning(
-                    f"File or Package missing in file @ {ind + 1} line, skipped"
+                    f"File or Package missing in file @ {ind + 1} line, added to ungrouped data"
                 )
                 self.package_file_dict_len["ungrouped_data"] += 1
                 if self.get_contents:
                     self.package_file_dict["ungrouped_data"].extend(file_and_package[0])
 
+            # if both are missing, skip/ignore the row
             elif not file_and_package:
+                logging.warning(
+                    f"Empty row - both file and Package missing in file @ {ind + 1} line, skipped"
+                )
                 continue
 
     @staticmethod
     def _split_by_comma(element: str) -> Union[list, str]:
+        """
+        Helper func: split files by ","
+        Args:
+            element: input string
+        Returns:
+            list or str: the individual elements separated by comma, else '' if empty input string
+        """
         if element:
             return element.split(",")
         return ""
