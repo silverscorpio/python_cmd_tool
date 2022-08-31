@@ -18,8 +18,13 @@ def arch_numeric():
 
 
 @pytest.fixture
-def parser():
+def parser_without_contents():
     return Parser(architecture="alpha123", verbose=False)
+
+
+@pytest.fixture
+def parser_with_contents():
+    return Parser(architecture="alpha123", verbose=False, get_contents=True)
 
 
 @pytest.fixture
@@ -38,6 +43,8 @@ def parser_process_data():
         "f5 p3",
         "f6 p3",
         "f7 ",
+        " p8",
+        "f8,f9,f10,f11 p5",
     ]
 
 

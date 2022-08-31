@@ -4,12 +4,19 @@ import logging
 import os
 import sys
 from collections import defaultdict
+from typing import Union
 
 logger = logging.getLogger(__name__)
 
 
 class Parser:
-    def __init__(self, architecture: str, verbose: bool, file_name: str = "data"):
+    def __init__(
+        self,
+        architecture: str,
+        verbose: bool,
+        file_name: str = "data",
+        get_contents: bool = False,
+    ):
         self.data_dir = os.path.join(os.getcwd(), "files")
         self.architecture = architecture
         self.verbosity = verbose
@@ -17,8 +24,11 @@ class Parser:
             self.data_dir, (file_name + f"_{self.architecture}" + ".txt")
         )
         self.file_data = None
-        self.package_file_dict = None
+        self.package_file_dict_len = defaultdict(int)
+        self.package_file_dict = defaultdict(list)
         self.package_file_dict_sorted = None
+        self.package_file_dict_len_sorted = None
+        self.get_contents = get_contents
 
     def read_txt(self) -> bytes:
         """
@@ -35,7 +45,7 @@ class Parser:
         else:
             return self.file_data
 
-    def parse_txt(self) -> dict:
+    def parse_txt(self) -> None:
         """
         Parse raw data to get packages & corresponding files in list form
         Returns:
@@ -43,8 +53,7 @@ class Parser:
         """
         data_str = Parser.convert_to_str(self.read_txt())
         data_list = data_str.strip().split("\n")
-        self.package_file_dict = self._process_data(data=data_list)
-        return self.package_file_dict
+        self._process_contents(data=data_list)
 
     def package_stats(
         self,
@@ -64,12 +73,13 @@ class Parser:
         Returns:
             list: reverse-sorted (desc) top-n packages & their files
         """
-        if self.package_file_dict is None:
-            self.package_file_dict_sorted = Parser.sort_dict_len_value(
-                self.parse_txt(), desc=True
+        if not self.package_file_dict_len:
+            self.parse_txt()
+            self.package_file_dict_len_sorted = Parser.sort_dict_len(
+                self.package_file_dict_len, desc=True
             )
-        self.package_file_dict_sorted = Parser.sort_dict_len_value(
-            self.package_file_dict, desc=True
+        self.package_file_dict_len_sorted = Parser.sort_dict_len(
+            self.package_file_dict_len, desc=True
         )
         if self.verbosity:
             logging.info(f"Getting Stats for top-{top_n} Packages...")
@@ -77,9 +87,6 @@ class Parser:
             file_path = os.path.join(
                 self.data_dir, (filename + f"_{self.architecture}" + ".txt")
             )
-            # TODO - remove the below redundant code & make mode to "a+"
-            # if os.path.exists(file_path):
-            #     os.remove(file_path)
             try:
                 with open(file_path, "w") as f:
                     header_string = "FOR ARCHITECTURE '{}':\n{:^40} {:^40}".format(
@@ -87,9 +94,11 @@ class Parser:
                     )
                     print(header_string)
                     f.write(header_string + "\n")
-                    for ind, val in enumerate(self.package_file_dict_sorted[:top_n]):
+                    for ind, val in enumerate(
+                        self.package_file_dict_len_sorted[:top_n]
+                    ):
                         package_files_row = "{:>5}. {:-<50} {}".format(
-                            (ind + 1), val[0], len(val[1])
+                            (ind + 1), val[0], val[1]
                         )
                         print(package_files_row)
                         if write_to_file:
@@ -98,7 +107,7 @@ class Parser:
                 logger.error(f"Error while writing results txt file: {e}")
                 sys.exit()
             else:
-                return self.package_file_dict_sorted
+                return self.package_file_dict_len_sorted
 
     def __str__(self):
         """
@@ -107,12 +116,12 @@ class Parser:
             str: output information about the total packages & total files to stdout/console
         """
         if self.package_file_dict is None:
-            self.package_file_dict = self.parse_txt()
+            self.parse_txt()
         return f"""Content Indices Info:
-        Total Packages: {len(self.package_file_dict)}
-        Total Files: {sum([len(i) for i in self.package_file_dict.values()])}
-        Empty Packages: {sum([1 if not i else 0 for i in self.package_file_dict.values()])}
-        Ungrouped Files: {len(self.package_file_dict["ungrouped_files"])}
+        Total Packages: {len(self.package_file_dict_len)}
+        Total Files: {sum([i for i in self.package_file_dict_len.values()])}
+        Empty Packages: {sum([i for i in self.package_file_dict_len.values() if i == 0])}
+        Ungrouped Data: {self.package_file_dict_len["ungrouped_data"]}
         """
 
     @staticmethod
@@ -127,7 +136,7 @@ class Parser:
         return text.decode("utf-8")
 
     @staticmethod
-    def sort_dict_len_value(dictionary: dict, desc: bool = False) -> list:
+    def sort_dict_len(dictionary: dict, desc: bool = False) -> list:
         """
         Sort dictionary in descending order based on length of values (list)
         Args:
@@ -136,9 +145,9 @@ class Parser:
         Returns:
             list: contains the sorted dictionary elements as tuples
         """
-        return sorted(dictionary.items(), key=lambda x: len(x[1]), reverse=desc)
+        return sorted(dictionary.items(), key=lambda x: x[1], reverse=desc)
 
-    def _process_data(self, data: list) -> dict:
+    def _process_contents(self, data: list) -> None:
         """
         Helper function: Process raw text content for the given architecture
         Args:
@@ -148,16 +157,36 @@ class Parser:
         """
         if self.verbosity:
             logging.info("Processing raw data...")
-        self.package_file_dict = defaultdict(list)
         for ind, val in enumerate(data):
-            try:
-                file, package = val.split()[0], val.split()[1]
-            except IndexError as e:  # incase file has no package
-                logging.error(f"{e}: No package for '{val.split()[0]}' file")
-                self.package_file_dict["ungrouped_files"].append(val.split()[0])
-            else:
-                self.package_file_dict[package].append(file)
-                if file == "EMPTY_PACKAGE":  # for udeb arch, empty package (first row)
-                    logger.warning(f"No file for '{package}' package")
-                    self.package_file_dict[package] = []
-        return self.package_file_dict
+            file_and_package = val.split()
+            if len(file_and_package) == 2:
+                file_s, package = Parser._split_by_comma(
+                    val.split()[0]
+                ), Parser._split_by_comma(val.split()[1])
+                if file_s[0] == "EMPTY_PACKAGE":
+                    logger.warning(f"No file for '{package[0]}' package")
+                    self.package_file_dict_len[package[0]] = 0
+                    if self.get_contents:
+                        self.package_file_dict[package[0]] = []
+                else:
+                    for pack in package:
+                        self.package_file_dict_len[pack] += len(file_s)
+                        if self.get_contents:
+                            self.package_file_dict[pack].extend(file_s)
+
+            elif len(file_and_package) == 1:
+                logging.warning(
+                    f"File or Package missing in file @ {ind + 1} line, skipped"
+                )
+                self.package_file_dict_len["ungrouped_data"] += 1
+                if self.get_contents:
+                    self.package_file_dict["ungrouped_data"].extend(file_and_package[0])
+
+            elif not file_and_package:
+                continue
+
+    @staticmethod
+    def _split_by_comma(element: str) -> Union[list, str]:
+        if element:
+            return element.split(",")
+        return ""

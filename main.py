@@ -1,6 +1,7 @@
 """ Main Script for Getting Debian Packages based on Architecture from Command Line """
 
 import os
+import time
 
 from modules.cmdline_parser import args_parser
 from modules.downloader import Downloader
@@ -29,10 +30,12 @@ def main() -> None:
         downloader.save_txt()
 
         # Parse data and Output Package Stats
-        parser = Parser(architecture=arch, verbose=args.verbose)
+        parser = Parser(architecture=arch, verbose=args.verbose, get_contents=False)
         parser.package_stats(write_to_file=True)
 
 
 if __name__ == "__main__":
     logger = def_logger(log_dir=os.getcwd())
+    start = time.time()
     main()
+    print(time.time() - start)

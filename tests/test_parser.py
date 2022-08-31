@@ -6,38 +6,50 @@ import pytest
     "unsorted_dict,sorted_dict_desc,sorted_dict_asc",
     [
         (
-            {"a": range(1), "b": range(5), "c": range(3)},
-            [("b", range(5)), ("c", range(3)), ("a", range(1))],
-            [("a", range(1)), ("c", range(3)), ("b", range(5))],
+            {"a": 1, "b": 5, "c": 3},
+            [("b", 5), ("c", 3), ("a", 1)],
+            [("a", 1), ("c", 3), ("b", 5)],
         )
     ],
 )
 def test_parser_sort_dict_len_value(
-    parser, unsorted_dict, sorted_dict_desc, sorted_dict_asc
+    parser_without_contents, unsorted_dict, sorted_dict_desc, sorted_dict_asc
 ):
-    assert isinstance(parser.sort_dict_len_value(unsorted_dict), list)
-    assert parser.sort_dict_len_value(unsorted_dict) == sorted_dict_asc
-    assert parser.sort_dict_len_value(unsorted_dict, desc=True) == sorted_dict_desc
+    assert isinstance(parser_without_contents.sort_dict_len(unsorted_dict), list)
+    assert parser_without_contents.sort_dict_len(unsorted_dict) == sorted_dict_asc
+    assert (
+        parser_without_contents.sort_dict_len(
+            unsorted_dict,
+            desc=True,
+        )
+        == sorted_dict_desc
+    )
 
 
-def test_parser_byte_to_str(parser, parser_byte_to_str):
-    assert isinstance(parser.convert_to_str(parser_byte_to_str), str)
+def test_parser_byte_to_str(parser_without_contents, parser_byte_to_str):
+    assert isinstance(parser_without_contents.convert_to_str(parser_byte_to_str), str)
 
 
-def test_parser_process_data(parser, parser_process_data):
-    processed_dict = parser._process_data(parser_process_data)
-    assert isinstance(processed_dict, dict)
-    assert len(processed_dict["p1"]) == 1
-    assert len(processed_dict["p2"]) == 2
-    assert len(processed_dict["p3"]) == 3
-    assert not processed_dict["p4"]
-    assert "ungrouped_files" in processed_dict
-    assert processed_dict["ungrouped_files"]
-    assert processed_dict["ungrouped_files"] == ["f7"]
+def test_parser_process_data(parser_without_contents, parser_process_data):
+    parser_without_contents._process_contents(parser_process_data)
+    processed_dict = parser_without_contents.package_file_dict_len
+    assert "ungrouped_data" in processed_dict
+    assert processed_dict["ungrouped_data"] == 2
     assert processed_dict == {
-        "p1": ["f1"],
-        "p2": ["f2", "f4"],
-        "p3": ["f3", "f5", "f6"],
-        "p4": [],
-        "ungrouped_files": ["f7"],
+        "p1": 1,
+        "p2": 2,
+        "p3": 3,
+        "p4": 0,
+        "p5": 4,
+        "ungrouped_data": 2,
     }
+
+
+def test_contents_dict_empty(parser_without_contents, parser_process_data):
+    parser_without_contents._process_contents(parser_process_data)
+    assert not parser_without_contents.package_file_dict
+
+
+def test_contents_dict_not_empty(parser_with_contents, parser_process_data):
+    parser_with_contents._process_contents(parser_process_data)
+    assert parser_with_contents.package_file_dict
