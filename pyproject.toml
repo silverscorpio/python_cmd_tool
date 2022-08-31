@@ -6,6 +6,7 @@ authors = ["Rajat silverscorpio <rajat.newtoneinstein@gmail.com>"]
 license = "MIT"
 readme = "README.md"
 keywords = ["python", "debian", "command line"]
+packages = [{ include = "canonical" }]
 
 [tool.poetry.dependencies]
 python = "^3.10"

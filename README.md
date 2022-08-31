@@ -14,7 +14,7 @@ Download and Get Package Statistics for a given architecture
 
 #### General Directory Structure
 
-<img src="./static/dir_tree.png" width="350" alt="project directory structure"/>
+<img src="canonical/static/dir_tree.png" width="350" alt="project directory structure"/>
 
 #### Basic Project Info
 
@@ -25,7 +25,7 @@ Download and Get Package Statistics for a given architecture
     - flake8
     - isort
 - license - [MIT](./LICENSE.md)
-- *main.py* - entry point for the tool [main script](./main.py)
+- *main.py* - entry point for the tool [main script](canonical/main.py)
 - more info under [Project TOML](./pyproject.toml)
 - Approx. time invested: ~ a week and half
 
