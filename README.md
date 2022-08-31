@@ -27,25 +27,48 @@ Download and Get Package Statistics for a given architecture
 - license - [MIT](./LICENSE.md)
 - *main.py* - entry point for the tool [main script](./main.py)
 - more info under [Project TOML](./pyproject.toml)
-- Approx. time invested: ~ a week
+- Approx. time invested: ~ a week and half
 
 #### Project Description | Approach
 
 - The task comprises primarily of two actions, which is achieved through two types of objects
     - **Downloader**:
-        - make request to base URL
-        - fetch content (HTML)
-        - parse (HTML) to get all URLs of gzip files
-        - extract the URL for the given architecture (user-input)
-        - make request to extracted url
-        - get content and save as gzip locally
-        - also save content as a txt (*bytes*) file for further use
+        - check if architecture names file exists locally
+            - if yes
+                - then search in it and fetch the contents ✅
+            - if no
+                - then make a request to base URL
+                - get the architecture names
+                - fetch content (HTML)
+                - parse (HTML) to get all URLs of gzip files
+                - get arch names from them and save them locally in a txt file
+                - re-check if the name exists
+                    - if yes, go ahead and fetch the contents ✅
+                    - if no, exit out (max attempt reached - 1) ❌
+        - the above logic
+            - prevents an additional (if not needed) request to server
+            - faster
+        - after the contents of architecture are fetched using its URL
+            - get content and save as gzip locally
+            - also save content as a txt (*bytes*) file for further use
     - **Parser**:
         - open the saved txt file
         - get content in right format (*bytes --> str*)
-        - parse text to a dict with keys as packages and related files as values (*list*)
+        - parse the raw text
+        - process contents
+            - define two dict
+                - dict with packages as keys and number of files in them as values
+                    - memory-efficient
+                    - faster
+                - dict with packages as keys and the files in them as values
+                    - can also be processed and obtained, if needed (user-defined)
+            - there could be four cases based on a row (2 cols- file & package)in the data
+                - file and package both present
+                - either one is missing (both cases handled together) --> categorised under "ungrouped data"
+                    - more functionality is needed to verify if the missing element is package or file
+                - both are missing --> row skipped/ignored
         - process the dict to get package stats
-            - sort (default descending) the dict based on the no of files in each package
+            - sort (default descending) the dict based on values (no of files)
             - get the top-n (default n = 10) packages
             - format the required results
             - output to console
