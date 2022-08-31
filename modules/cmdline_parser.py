@@ -10,11 +10,11 @@ logger = logging.getLogger(__name__)
 def validate_arch(arch: str) -> str:
     """
     Validate the 'arch' argument from cmdline assuming that no architecture
-    is purely numeric and return the lowercase value if validated
+    is purely numeric & return the lowercase value if validated
     Args:
         arch: positional argument from cmd line
     Returns:
-        str: the validated and converted to lowercase 'arch' argument
+        str: the validated & converted to lowercase 'arch' argument
     """
     if arch.isnumeric():
         logger.error("TypeError: Invalid value for architecture")

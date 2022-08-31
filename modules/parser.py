@@ -1,4 +1,4 @@
-"""Parser for Parsing and Processing the Downloaded Data and Obtaining Package Stats"""
+"""Parser for Parsing & Processing the Downloaded Data & Obtaining Package Stats"""
 
 import logging
 import os
@@ -37,9 +37,9 @@ class Parser:
 
     def parse_txt(self) -> dict:
         """
-        Parse raw data to get packages and corresponding files in list form
+        Parse raw data to get packages & corresponding files in list form
         Returns:
-            dict: dictionary of packages and their corresponding files using helper function
+            dict: dictionary of packages & their corresponding files using helper function
         """
         data_str = Parser.convert_to_str(self.read_txt())
         data_list = data_str.strip().split("\n")
@@ -54,15 +54,15 @@ class Parser:
         filename: str = "package_stats",
     ) -> list:
         """
-        Main Task - Output the top-n packages and their files in descending order (Package Stats)
+        Main Task - Output the top-n packages & their files in descending order (Package Stats)
         Args:
             top_n: no of top packages required (based on the number of files contained in them),
-            default=10 and sort in descending order
+            default=10 & sort in descending order
             output: if the list of top_n is printed to stdout/console
             write_to_file: if results are to be written to a txt file
             filename: if yes above, the filename else default base name of "package_stats" is used
         Returns:
-            list: reverse-sorted (desc) top-n packages and their files
+            list: reverse-sorted (desc) top-n packages & their files
         """
         if self.package_file_dict is None:
             self.package_file_dict_sorted = Parser.sort_dict_len_value(
@@ -77,10 +77,11 @@ class Parser:
             file_path = os.path.join(
                 self.data_dir, (filename + f"_{self.architecture}" + ".txt")
             )
-            if os.path.exists(file_path):
-                os.remove(file_path)
+            # TODO - remove the below redundant code & make mode to "a+"
+            # if os.path.exists(file_path):
+            #     os.remove(file_path)
             try:
-                with open(file_path, "a") as f:
+                with open(file_path, "w") as f:
                     header_string = "FOR ARCHITECTURE '{}':\n{:^40} {:^40}".format(
                         self.architecture, "PACKAGE NAME", "NUMBER OF FILES"
                     )
@@ -103,7 +104,7 @@ class Parser:
         """
         Give info about the downloaded data based on Package Stats
         Returns:
-            str: output information about the total packages and total files to stdout/console
+            str: output information about the total packages & total files to stdout/console
         """
         if self.package_file_dict is None:
             self.package_file_dict = self.parse_txt()
@@ -141,9 +142,9 @@ class Parser:
         """
         Helper function: Process raw text content for the given architecture
         Args:
-            data: packages and files data in list form, read from saved txt file
+            data: packages & files data in list form, read from saved txt file
         Returns:
-            dict: dictionary containing packages as keys and their files as values (list)
+            dict: dictionary containing packages as keys & their files as values (list)
         """
         if self.verbosity:
             logging.info("Processing raw data...")

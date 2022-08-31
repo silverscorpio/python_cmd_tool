@@ -17,3 +17,10 @@ def test_downloader_request(monkeypatch, downloader, status, expected):
     response, _ = downloader.request_soup(url=downloader.base_url)
 
     assert response.get_response_status() == expected
+
+
+def test_downloader_url_parser(downloader, downloader_url_parser: list):
+    parsed_urls = downloader.extract_arch(downloader_url_parser)
+    assert all([isinstance(arch, str) for arch in parsed_urls])
+    assert parsed_urls[0] == "arch123"
+    assert parsed_urls[1] == "arch123-arch456-arch789"

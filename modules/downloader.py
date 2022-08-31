@@ -1,4 +1,4 @@
-"""Downloader for Downloading and Saving the data as gzip and text"""
+"""Downloader for Downloading & Saving the data as gzip & text"""
 
 import gzip
 import logging
@@ -17,32 +17,56 @@ logger = logging.getLogger(__name__)
 
 class Downloader:
     def __init__(
-        self, architecture: str, base_url: str, verbose: bool, file_name: str = "data"
+        self,
+        architecture: str,
+        base_url: str,
+        verbose: bool,
+        file_name: str = "data",
+        arch_file_name: str = "arch_names",
     ):
         self.data_dir = os.path.join(os.getcwd(), "files")
         self.architecture = architecture
         self.verbosity = verbose
-        self.gzip_filename = os.path.join(
+        self.gzip_filepath = os.path.join(
             self.data_dir, (file_name + f"_{self.architecture}" + ".gz")
         )
-        self.txt_filename = os.path.join(
+        self.txt_filepath = os.path.join(
             self.data_dir, (file_name + f"_{self.architecture}" + ".txt")
         )
         self.base_url = base_url
         self.base_pattern = "Contents-"
+        self.architecture_url = None
+        self.arch_names = None
+        self.arch_filepath = os.path.join(os.getcwd(), arch_file_name + ".txt")
+        self.fetch_attempts = 0
+        self.max_fetch_attempts = 1
 
-    def fetch_urls(self) -> list:
+    def initiate(self) -> None:
         """
-        Fetch and parse all download links of gzip files from base URL
+        Initiate process for getting the URL for the given architecture
+        Returns:
+            None
+        """
+        if self.verbosity:
+            logging.info(f"Checking locally for '{self.architecture}'...")
+        self._check_arch_names_file()
+
+    def get_content_urls(self) -> None:
+        """
+        Fetch & parse all download links of gzip files from base URL
         Returns:
             list: all download URLs
         """
+        if self.verbosity:
+            logging.info("Fetching & saving architecture names for local storage...")
         _, url_soup = Downloader.request_soup(self.base_url)
-        return [
+        content_urls = [
             link.get("href")
             for link in url_soup.find_all("a")
             if self.base_pattern in link.get("href")
         ]
+        self.arch_names = Downloader.extract_arch(content_urls)
+        self._write_arch_names()
 
     def extract_arch_url(self) -> str:
         """
@@ -50,17 +74,26 @@ class Downloader:
         Returns:
             str: download url specific to the architecture
         """
-        try:
-            architecture_path = [
-                link for link in self.fetch_urls() if self.architecture in link
-            ][0]
-        except IndexError:
-            logger.error(
-                f"No download file found for architecture '{self.architecture}' at {self.base_url}"
+        if self.architecture in self.arch_names:
+            if self.verbosity:
+                logging.info(
+                    f"'{self.architecture}' found in file, fetching its content..."
+                )
+            self.architecture_url = parse.urljoin(
+                self.base_url, (self.base_pattern + self.architecture + ".gz")
+            )
+            return self.architecture_url
+        else:
+            while self.fetch_attempts < self.max_fetch_attempts:
+                if self.verbosity:
+                    logging.info(f"'{self.architecture}' not found in local file!")
+                    logging.info(f"Updating data from {self.base_url}...")
+                self.fetch_attempts += 1
+                self.get_content_urls()
+            print(
+                f"Nothing found for '{self.architecture}' architecture after update, exiting..."
             )
             sys.exit()
-        else:
-            return parse.urljoin(self.base_url, architecture_path)
 
     def save_gzip(self, chunk_size: int = 1024) -> None:
         """
@@ -71,10 +104,10 @@ class Downloader:
             None
         """
         if self.verbosity:
-            logger.info("Downloading contents from URL and saving as gzip...")
-        r, _ = Downloader.request_soup(self.extract_arch_url())
+            logger.info("Downloading contents from URL & saving as gzip...")
+        r, _ = Downloader.request_soup(self.architecture_url)
         try:
-            with open(self.gzip_filename, "wb") as f:
+            with open(self.gzip_filepath, "wb") as f:
                 with tqdm(
                     unit="B",
                     unit_scale=True,
@@ -101,8 +134,8 @@ class Downloader:
         if self.verbosity:
             logger.info("Saving as txt file for further processing...")
         try:
-            with open(self.gzip_filename, "rb") as fr_gzip, open(
-                self.txt_filename, "wb"
+            with open(self.gzip_filepath, "rb") as fr_gzip, open(
+                self.txt_filepath, "wb"
             ) as fr_txt:
                 data = gzip.decompress(fr_gzip.read())
                 fr_txt.write(data)
@@ -110,13 +143,62 @@ class Downloader:
             logger.error("gzip file not found for writing a txt file")
             sys.exit()
 
-    def __str__(self):
+    def _read_arch_names(self) -> None:
         """
-        Give info about architecture url
+        Helper function: Read architecture names from locally stored txt file
+        & then attempt to get the given arch from it, if it exists
         Returns:
-            str: architecture url
+            None
         """
-        return f" For {self.architecture}, download URL - {self.extract_arch_url()}"
+        with open(self.arch_filepath, "r") as f:
+            self.arch_names = f.read().split()
+        self.extract_arch_url()
+
+    def _write_arch_names(self) -> None:
+        """
+        Helper function: Write extracted architecture names to a txt file
+        & then attempt to get the given arch from it, if it exists
+        Returns:
+            None
+        """
+        try:
+            with open(self.arch_filepath, "w") as f:
+                for name in self.arch_names:
+                    f.write(name + "\n")
+        except IOError as e:
+            logger.error(f"Error while writing arch_names txt file: {e}")
+            sys.exit()
+        else:
+            self.extract_arch_url()
+
+    def _check_arch_names_file(self) -> None:
+        """
+        Helper function: Check if a file with all architecture names exists locally,
+        if yes read it else get it
+        Returns:
+            None
+        """
+        if os.path.exists(self.arch_filepath):
+            if self.verbosity:
+                logging.info("Architecture names file found")
+            self._read_arch_names()
+        else:
+            if self.verbosity:
+                logging.info("Architecture names file not found, creating it...")
+            self.get_content_urls()
+
+    @staticmethod
+    def extract_arch(urls: list) -> list:
+        """
+        Extract arch name from the link for all URLs
+        Args:
+            urls: list of download links
+
+        Returns:
+            list: architecture names
+
+        """
+        return [url[url.index("-") + 1 : url.index(".")] for url in urls]
 
     @staticmethod
     def request_soup(url: str) -> Tuple[requests.Response, bs4.BeautifulSoup]:
@@ -142,3 +224,11 @@ class Downloader:
             sys.exit()
         else:
             return r, BeautifulSoup(r.text, "html.parser")
+
+    def __str__(self):
+        """
+        Give info about architecture url
+        Returns:
+            str: architecture url
+        """
+        return f" For {self.architecture}, download URL - {self.architecture_url}"

@@ -24,6 +24,7 @@ def main() -> None:
         downloader = Downloader(
             architecture=arch, base_url=base_url, verbose=args.verbose
         )
+        downloader.initiate()
         downloader.save_gzip()
         downloader.save_txt()
 

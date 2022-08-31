@@ -48,6 +48,11 @@ def downloader():
     )
 
 
+@pytest.fixture
+def downloader_url_parser():
+    return ["alphabetagamma-arch123.gz", "alphabetagamma-arch123-arch456-arch789.gz"]
+
+
 class MockResponse:
     def __init__(self, response_status: int, response_text="alphabeta123"):
         self.status_code = response_status
