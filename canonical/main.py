@@ -29,7 +29,12 @@ def main() -> None:
         downloader.save_txt()
 
         # Parse data and Output Package Stats
-        parser = Parser(architecture=arch, verbose=args.verbose, get_contents=False)
+        parser = Parser(
+            architecture=arch,
+            verbose=args.verbose,
+            regex_parse=False,
+            get_contents=False,
+        )
         parser.package_stats(write_to_file=True)
 
 

@@ -2,9 +2,10 @@
 
 import logging
 import os
+import re
 import sys
 from collections import defaultdict
-from typing import Union
+from typing import Tuple, Union
 
 logger = logging.getLogger(__name__)
 
@@ -14,8 +15,9 @@ class Parser:
         self,
         architecture: str,
         verbose: bool,
+        regex_parse: bool,
+        get_contents: bool,
         file_name: str = "data",
-        get_contents: bool = False,
     ):
         self.data_dir = os.path.join(os.getcwd(), "files")
         self.architecture = architecture
@@ -29,6 +31,8 @@ class Parser:
         self.package_file_dict_sorted = None
         self.package_file_dict_len_sorted = None
         self.get_contents = get_contents
+        self.regex_parse = regex_parse
+        self.regex = re.compile(r"(\s|,)[a-z-]+\d*\/.[^\s]*(\n|,)")
 
     def read_txt(self) -> bytes:
         """
@@ -92,7 +96,7 @@ class Parser:
             )
             try:
                 with open(file_path, "w") as f:
-                    header_string = "FOR ARCHITECTURE '{}':\n{:^40} {:^40}".format(
+                    header_string = "FOR ARCHITECTURE '{}':\n{:^40} {:>45}".format(
                         self.architecture, "PACKAGE NAME", "NUMBER OF FILES"
                     )
                     print(header_string)
@@ -100,7 +104,7 @@ class Parser:
                     for ind, val in enumerate(
                         self.package_file_dict_len_sorted[:top_n]
                     ):
-                        package_files_row = "{:>5}. {:-<50} {}".format(
+                        package_files_row = "{:>5}. {:-<70} {}".format(
                             (ind + 1), val[0], val[1]
                         )
                         print(package_files_row)
@@ -152,7 +156,7 @@ class Parser:
 
     def _process_contents(self, data: list) -> None:
         """
-        Helper function: Process raw text content for the given architecture
+        Helper function: Process raw text content for the given architecture using the two parsers (split or regex)
         Args:
             data: packages & files data in list form, read from saved txt file
         Returns:
@@ -161,46 +165,82 @@ class Parser:
         if self.verbosity:
             logging.info("Processing raw data...")
         for ind, val in enumerate(data):
-            file_and_package = val.split()
+            if self.regex_parse:
+                packages, file_s = self._regex_parser(val)
+            else:
+                packages, file_s = Parser._split_parser(val)
 
-            # if the row is 'good' - both file and package present
-            if len(file_and_package) == 2:
-                file_s, package = Parser._split_by_comma(
-                    val.split()[0]
-                ), Parser._split_by_comma(val.split()[1])
-
-                # if the first element is the string "empty_package"
-                if file_s[0] == "EMPTY_PACKAGE":
-                    logger.warning(
-                        f"'Empty Package' found for '{package[0]}' package @ {ind + 1} line in file"
-                    )
-                    self.package_file_dict_len[package[0]] = 0
-                    if self.get_contents:
-                        self.package_file_dict[package[0]] = []
-                else:
-                    for pack in package:
-                        self.package_file_dict_len[pack] += len(file_s)
-                        if self.get_contents:
-                            self.package_file_dict[pack].extend(file_s)
-
-            # if either file or package is missing (more functionality req for finding if it's file or package
-            elif len(file_and_package) == 1:
+            # file or package is missing ((more functionality req for finding if it's file or package (regex))
+            if not file_s and packages:
                 logging.warning(
                     f"File or Package missing in file @ {ind + 1} line, added to ungrouped data"
                 )
                 self.package_file_dict_len["ungrouped_data"] += 1
                 if self.get_contents:
-                    self.package_file_dict["ungrouped_data"].extend(file_and_package[0])
+                    self.package_file_dict["ungrouped_data"].extend(packages[0])
 
             # if both are missing, skip/ignore the row
-            elif not file_and_package:
+            elif not file_s and not packages:
                 logging.warning(
                     f"Empty row - both file and Package missing in file @ {ind + 1} line, skipped"
                 )
                 continue
 
+            # if the row is 'good' - both file and package present
+            if file_s and packages:
+                # if the only element in file_s is "empty_package"
+                if len(file_s) == 1 and file_s[0].upper() == "EMPTY_PACKAGE":
+                    logger.warning(
+                        f"'Empty Package' found for '{packages[0]}' package @ {ind + 1} line in file"
+                    )
+                    self.package_file_dict_len[packages[0]] = 0
+                    if self.get_contents:
+                        self.package_file_dict[packages[0]] = []
+                else:
+                    for pack in packages:
+                        if not pack:
+                            logging.info(f"{pack}{ind + 1}{val}{file_s}")
+                            sys.exit()
+                        self.package_file_dict_len[pack] += len(file_s)
+                        if self.get_contents:
+                            self.package_file_dict[pack].extend(file_s)
+
+    def _regex_parser(self, value: str) -> Tuple[list | str, list | str]:
+        """
+        Helper function: Parse based on regex match for the package(s),
+        falls back to split-based if regex fails (though tested a lot)
+        Args:
+            value: the row (raw data string) containing the file(s) and package(s)
+        Returns:
+            tuple: the package(s) and file(s) as a list
+        """
+        m = self.regex.search(value + "\n")
+        if m:
+            packages = Parser.split_by_comma(m.group().strip())
+            file_s = Parser.split_by_comma(
+                "".join([i.strip() for i in value[: m.span()[0]]])
+            )
+            return packages, file_s
+        return Parser._split_parser(value)
+
     @staticmethod
-    def _split_by_comma(element: str) -> Union[list, str]:
+    def _split_parser(value: str) -> Tuple[list | str, list | str]:
+        """
+        Helper function: Parse based after splitting the file(s) and package(s) from data row
+        Args:
+            value: the row (raw data string) containing the file(s) and package(s)
+        Returns:
+            tuple: the package(s) and file(s) as a list
+        """
+        file_and_package = value.split()
+        packages = Parser.split_by_comma(file_and_package[-1].strip())
+        file_s = Parser.split_by_comma(
+            "".join([i.strip() for i in file_and_package[:-1]])
+        )
+        return packages, file_s
+
+    @staticmethod
+    def split_by_comma(element: str) -> Union[list, str]:
         """
         Helper func: split files by ","
         Args:

@@ -17,14 +17,24 @@ def arch_numeric():
     return "12345"
 
 
-@pytest.fixture
-def parser_without_contents():
-    return Parser(architecture="alpha123", verbose=False)
+@pytest.fixture(params=[False, True])
+def parser_without_contents(request):
+    return Parser(
+        architecture="alpha123",
+        verbose=False,
+        regex_parse=request.param,
+        get_contents=False,
+    )
 
 
-@pytest.fixture
-def parser_with_contents():
-    return Parser(architecture="alpha123", verbose=False, get_contents=True)
+@pytest.fixture(params=[False, True])
+def parser_with_contents(request):
+    return Parser(
+        architecture="alpha123",
+        verbose=False,
+        regex_parse=request.param,
+        get_contents=True,
+    )
 
 
 @pytest.fixture

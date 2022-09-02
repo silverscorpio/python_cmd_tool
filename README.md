@@ -56,17 +56,27 @@ Download and Get Package Statistics for a given architecture
         - get content in right format (*bytes --> str*)
         - parse the raw text
         - process contents
-            - define two dict
-                - dict with packages as keys and number of files in them as values
-                    - memory-efficient
-                    - faster
-                - dict with packages as keys and the files in them as values
-                    - can also be processed and obtained, if needed (user-defined)
-            - there could be four cases based on a row (2 cols- file & package)in the data
-                - file and package both present
-                - either one is missing (both cases handled together) --> categorised under "ungrouped data"
-                    - more functionality is needed to verify if the missing element is package or file
-                - both are missing --> row skipped/ignored
+            - two methods - **split-based** & **regex-based** (flag can be set in *main.py* if required)
+                - **split-based**
+                    - principle - split the contents and then get file(s) and package(s) considering the fact that
+                      package(s) will always be towards the end (second column) and file(s) in the first column
+                      separated by one or more whitespace (as described in *content-indices* format)
+                    - define two dict
+                        - dict with packages as keys and number of files in them as values
+                            - memory-efficient
+                            - faster
+                        - dict with packages as keys and the files in them as values
+                            - can also be processed and obtained, if needed (user-defined)
+                    - there could be four cases based on a row (2 columns - file & package)in the data
+                        - file and package both present
+                        - either one is missing (both cases handled together) --> categorised under "ungrouped data"
+                            - more functionality is needed to verify if the missing element is package or file
+                        - both are missing --> row skipped/ignored
+                    - **regex-based**
+                        - principle - match the package(s) in the data row based on regex
+                        - rest is same as above after the file(s) and package(s) have been obtained
+                        - if the regex match fails (though has been tested a lot), it uses the above method rather than
+                          crashing
         - process the dict to get package stats
             - sort (default descending) the dict based on values (no of files)
             - get the top-n (default n = 10) packages
