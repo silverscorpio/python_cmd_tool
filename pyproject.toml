@@ -2,7 +2,7 @@
 name = "canonical"
 version = "0.1.0"
 description = "Python Command Line Tool For Downloading Debian Packages"
-authors = ["Rajat silverscorpio <rajat.newtoneinstein@gmail.com>"]
+authors = ["silverscorpio"]
 license = "MIT"
 readme = "README.md"
 keywords = ["python", "debian", "command line"]
