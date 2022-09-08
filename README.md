@@ -27,11 +27,10 @@ Download and Get Package Statistics for a given architecture
 - license - [MIT](./LICENSE.md)
 - *main.py* - entry point for the tool [main script](canonical/main.py)
 - more info under [Project TOML](./pyproject.toml)
-- Approx. time invested: ~ a week and half
 
 #### Project Description | Approach
 
-- The task comprises primarily of two actions, which is achieved through two types of objects
+- The goal comprises primarily of two actions, which is achieved through two types of objects
     - **Downloader**:
         - check if architecture names file exists locally
             - if yes
